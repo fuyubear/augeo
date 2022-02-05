@@ -22,7 +22,7 @@ const rest = new REST({ version: '9' }).setToken(token);
                 Routes.applicationGuildCommands(clientId, guildTestId),
                 { body: commands },
             );
-            console.log('Successfully reloaded application (/) commands for all guilds.'
+            console.log('Successfully reloaded application (/) commands for all guilds. '
                         + 'Changes to the command details should show up soon.');
         }
         else {
@@ -30,7 +30,7 @@ const rest = new REST({ version: '9' }).setToken(token);
                 Routes.applicationCommands(clientId),
                 { body: commands },
             );
-            console.log('Successfully reloaded application (/) commands for all guilds.'
+            console.log('Successfully reloaded application (/) commands for all guilds. '
                         + 'Please give time for command changes to propagate.');
         }
     }
