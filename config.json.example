@@ -1,0 +1,11 @@
+{
+    "clientId": "00000",
+	"guildTestId": "00000",
+	"token": "asdf",
+    "botAdminIds": ["00000"],
+    "redisEnabled": false,
+    "redisUser": "user",
+    "redisPass": "pass",
+    "redisConnection": "localhost:6379",
+    "ringEnabled": false
+}
