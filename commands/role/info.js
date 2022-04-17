@@ -7,6 +7,10 @@ module.exports.execute = async function(interaction) {
         return;
     }
 
+    interaction.guild.members.fetch()
+        .then(console.log)
+        .catch(console.error);
+
     const guildRoleManager = interaction.guild.roles;
     const guildMemberManager = interaction.guild.members;
 

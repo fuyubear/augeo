@@ -35,7 +35,7 @@ module.exports = {
                 ))
         .addSubcommand(subcommand =>
             subcommand.setName('edit')
-                .setDescription('Remove a user to a role you are managing.')
+                .setDescription('Edit a voice channel\'s voice region.')
                 .addChannelOption(option =>
                     option.setName('voice_channel')
                         .setDescription('Pick the voice channel to edit.')
