@@ -10,7 +10,7 @@ module.exports = {
     async execute(interaction) {
         await interaction.deferReply();
 
-        // really awful way to enforce command permissions\
+        // really awful way to enforce command permissions
         // until Discord releases slash command permissions
         if ((interaction.guild.ownerId !== interaction.member.id)
                 && (!(botAdminIds.includes(interaction.member.id)))) {

@@ -8,12 +8,6 @@ module.exports = {
             return;
         }
 
-        const voiceRegionSettings = await getVoiceRegionSettings(oldState, newState);
-        let changeRegionOn = true;
-        if (!voiceRegionSettings || !voiceRegionSettings.flag) {
-            changeRegionOn = false;
-        }
-
         const voiceAccordionCategoryId = accordionSettings.category.id;
 
         // remove any accordion expand channels with no members left,
@@ -25,7 +19,7 @@ module.exports = {
             oldState.guild.channels.cache.filter(channel =>
                 channel.type === 'GUILD_VOICE'
                 && channel.parentId === voiceAccordionCategoryId
-                && isAccordionExpandChannel(channel.name, changeRegionOn, accordionSettings)
+                && isAccordionExpandChannel(channel.name, accordionSettings)
                 && (channel.members.size === 0),
             ).each(channel =>
                 emptyAccordionExpandChannels.push(channel),
@@ -38,8 +32,7 @@ module.exports = {
                         channel.type === 'GUILD_VOICE'
                         && channel.parentId === voiceAccordionCategoryId
                         && channel.members.size === 0
-                        && isAccordionBaseChannel(channel.name,
-                            changeRegionOn, accordionSettings),
+                        && isAccordionBaseChannel(channel.name, accordionSettings),
                 ).size === 0
             ) {
                 // all base channels have at least one participant
@@ -53,11 +46,7 @@ module.exports = {
             }
 
             for (let i = 0; i < numChannelsRemoved; i++) {
-                let oldChannelName = emptyAccordionExpandChannels[i].name;
-                if (changeRegionOn) {
-                    oldChannelName = oldChannelName.split('] ')[1];
-                }
-
+                const oldChannelName = emptyAccordionExpandChannels[i].name;
                 await emptyAccordionExpandChannels[i].delete()
                     .catch(console.error);
 
@@ -76,8 +65,7 @@ module.exports = {
                     channel.type === 'GUILD_VOICE'
                     && channel.parentId === voiceAccordionCategoryId
                     && channel.members.size === 0
-                    && isAccordionBaseOrExpandChannel(channel.name,
-                        changeRegionOn, accordionSettings),
+                    && isAccordionBaseOrExpandChannel(channel.name, accordionSettings),
             ).size === 0
             && newState.guild.channels.cache.filter(
                 (channel) =>
@@ -87,24 +75,20 @@ module.exports = {
                 + accordionSettings.expandSize + accordionSettings.ignore.length)
         ) {
             const checkIfAccordionChannel = isAccordionBaseOrExpandChannel(newState.channel.name,
-                changeRegionOn, accordionSettings);
+                accordionSettings);
             if (checkIfAccordionChannel
                 && newState.channel.parentId === voiceAccordionCategoryId
                 && newState.channel.type === 'GUILD_VOICE') {
 
                 // pull name out from expand
-                let newVoiceChannelName = accordionSettings.expand.pop();
+                const newVoiceChannelName = accordionSettings.expand.pop();
 
-                if (changeRegionOn) {
-                    newVoiceChannelName = '[🌐] ' + newVoiceChannelName;
-                }
-
-                // let newVoiceChannel;
+                // const newVoiceChannel =
                 await newState.channel.clone({
                     position: newState.channel.rawPosition,
                     name: `${newVoiceChannelName}`,
                     bitrate: newState.guild.maximumBitrate,
-                });
+                }).catch(console.error);
 
                 await setSettings(newState.guild.id, accordionSettings);
             }
@@ -114,39 +98,17 @@ module.exports = {
     },
 };
 
-function isAccordionExpandChannel(chName, changeRegionOn, accordionSettings) {
-    let basicVoiceChannelName;
-    if (changeRegionOn) {
-        basicVoiceChannelName = chName.split('] ')[1];
-    }
-    else {
-        basicVoiceChannelName = chName;
-    }
-    return (accordionSettings.expandList.includes(basicVoiceChannelName));
+function isAccordionExpandChannel(chName, accordionSettings) {
+    return (accordionSettings.expandList.includes(chName));
 }
 
-function isAccordionBaseChannel(chName, changeRegionOn, accordionSettings) {
-    let basicVoiceChannelName;
-    if (changeRegionOn) {
-        basicVoiceChannelName = chName.split('] ')[1];
-    }
-    else {
-        basicVoiceChannelName = chName;
-    }
-    return (accordionSettings.base.includes(basicVoiceChannelName));
+function isAccordionBaseChannel(chName, accordionSettings) {
+    return (accordionSettings.base.includes(chName));
 }
 
-function isAccordionBaseOrExpandChannel(chName, changeRegionOn, accordionSettings) {
-    let basicVoiceChannelName;
-    if (changeRegionOn) {
-        basicVoiceChannelName = chName.split('] ')[1];
-    }
-    else {
-        basicVoiceChannelName = chName;
-    }
-
-    return (accordionSettings.expandList.includes(basicVoiceChannelName))
-    || (accordionSettings.base.includes(basicVoiceChannelName));
+function isAccordionBaseOrExpandChannel(chName, accordionSettings) {
+    return (accordionSettings.expandList.includes(chName))
+    || (accordionSettings.base.includes(chName));
 }
 
 async function setSettings(guildId, accordionSettings) {
@@ -170,28 +132,6 @@ async function getAccordionSettings(oldState, newState) {
     let enabled;
     const VOICE_ACCORDION_SETTINGS_KEY_URL = `voice-accordion/${guildId}/settings`;
     await keyv.get(VOICE_ACCORDION_SETTINGS_KEY_URL)
-        .then(ret => enabled = ret);
-    if (!enabled) {
-        return false;
-    }
-    return enabled;
-}
-
-async function getVoiceRegionSettings(oldState, newState) {
-    let guildId;
-    if (oldState.channel) {
-        guildId = oldState.guild.id;
-    }
-    else if (newState.channel) {
-        guildId = newState.guild.id;
-    }
-    else {
-        return false;
-    }
-
-    let enabled;
-    const VOICE_REGIONS_SETTINGS_KEY_URL = `voice-regions/${guildId}/settings`;
-    await keyv.get(VOICE_REGIONS_SETTINGS_KEY_URL)
         .then(ret => enabled = ret);
     if (!enabled) {
         return false;

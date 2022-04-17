@@ -43,12 +43,6 @@ module.exports = {
         await keyv.get(VOICE_ACCORDION_KEY_URL)
             .then(ret => enabled = ret);
         if (!enabled || !enabled.flag) {
-            const voiceRegionSettings = await getVoiceRegionSettings(interaction.guildId);
-            let changeRegionEnabled = true;
-            if (!voiceRegionSettings || !voiceRegionSettings.flag) {
-                changeRegionEnabled = false;
-            }
-
             const voiceAccordionCategory = interaction.options.getChannel('category_channel');
             let voiceAccordionBase = interaction.options.getString('base_ch_names');
             let voiceAccordionExpand = interaction.options.getString('expand_ch_names');
@@ -62,7 +56,6 @@ module.exports = {
             }
 
             voiceAccordionBase = voiceAccordionBase.split(',');
-
             voiceAccordionExpand = voiceAccordionExpand.split(',');
 
             if (voiceAccordionIgnore) {
@@ -91,9 +84,6 @@ module.exports = {
                 let newVoiceChannelName;
                 for (let i = 0; i < voiceAccordionBase.length; i++) {
                     newVoiceChannelName = voiceAccordionBase[i];
-                    if (changeRegionEnabled) {
-                        newVoiceChannelName = '[🌐] ' + newVoiceChannelName;
-                    }
 
                     await categoryCh.createChannel(newVoiceChannelName, {
                         type: 'GUILD_VOICE',
@@ -104,9 +94,6 @@ module.exports = {
                 if (voiceAccordionIgnore) {
                     for (let i = 0; i < voiceAccordionIgnore.length; i++) {
                         newVoiceChannelName = voiceAccordionIgnore[i];
-                        if (changeRegionEnabled) {
-                            newVoiceChannelName = '[🌐] ' + newVoiceChannelName;
-                        }
 
                         await categoryCh.createChannel(newVoiceChannelName, {
                             type: 'GUILD_VOICE',
@@ -144,14 +131,3 @@ module.exports = {
         return;
     },
 };
-
-async function getVoiceRegionSettings(interactionGuildId) {
-    let enabled;
-    const VOICE_REGIONS_SETTINGS_KEY_URL = `voice-regions/${interactionGuildId}/settings`;
-    await keyv.get(VOICE_REGIONS_SETTINGS_KEY_URL)
-        .then(ret => enabled = ret);
-    if (!enabled) {
-        return false;
-    }
-    return enabled;
-}
