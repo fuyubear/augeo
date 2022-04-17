@@ -74,9 +74,13 @@ module.exports = {
         const basicVoiceChannelName = voiceChannel.name;
 
         let regionVal = interaction.options.getString('voice_region');
-        const regionValName = regionVal;
+        let regionValName = regionVal;
 
         if (interaction.options.getSubcommand() === 'view') {
+            regionValName = voiceChannel.rtcRegion;
+            if (regionValName === null) {
+                regionValName = 'Automatic';
+            }
             await interaction.editReply({
                 content: `The voice channel region override for ${basicVoiceChannelName} is ${regionValName}.`,
                 components: [] })
