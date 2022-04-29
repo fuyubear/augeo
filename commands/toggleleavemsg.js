@@ -1,7 +1,6 @@
 const { Permissions } = require('discord.js');
 const { SlashCommandBuilder } = require('@discordjs/builders');
 const { keyv } = require('../index');
-const { botAdminIds } = require('../config.json');
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -10,15 +9,6 @@ module.exports = {
         + 'Toggle user leave messages in the System Messages text channel.'),
     async execute(interaction) {
         await interaction.deferReply();
-
-        // really awful way to enforce command permissions
-        // until Discord releases slash command permissions
-        if ((interaction.guild.ownerId !== interaction.member.id)
-                && (!(botAdminIds.includes(interaction.member.id)))) {
-            await interaction.editReply('You do not have permission to change this setting.')
-                .catch(console.error);
-            return;
-        }
 
         let enabled;
         const THREAD_PERSIST_KEY_URL = `leave-msg/${interaction.guildId}/settings`;

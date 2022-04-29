@@ -1,6 +1,5 @@
 const { SlashCommandBuilder } = require('@discordjs/builders');
 const { ChannelType } = require('discord-api-types/v9');
-const { ring, ringEnabled, botAdminIds } = require('../config.json');
 const { keyv } = require('../index');
 
 // const voiceRegionDict = {
@@ -84,16 +83,6 @@ module.exports = {
             await interaction.editReply({
                 content: `The voice channel region override for ${basicVoiceChannelName} is ${regionValName}.`,
                 components: [] })
-                .catch(console.error);
-            return;
-        }
-
-        // really awful way to enforce command permissions
-        // until Discord releases slash command permissions
-        if ((ringEnabled && ring[1] && !interaction.member.roles.cache.has(ring[1]))
-            && ((interaction.guild.ownerId !== interaction.member.id)
-            && (!(botAdminIds.includes(interaction.member.id))))) {
-            await interaction.editReply('You do not have permission to edit Voice Channel regions.')
                 .catch(console.error);
             return;
         }

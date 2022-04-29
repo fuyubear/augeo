@@ -1,7 +1,6 @@
 const { SlashCommandBuilder } = require('@discordjs/builders');
 const { ChannelType } = require('discord-api-types/v9');
 const { keyv } = require('../index');
-const { botAdminIds } = require('../config.json');
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -30,13 +29,6 @@ module.exports = {
                 .setRequired(false)),
     async execute(interaction) {
         await interaction.deferReply();
-
-        if ((interaction.guild.ownerId !== interaction.member.id)
-                && (!(botAdminIds.includes(interaction.member.id)))) {
-            await interaction.editReply('Only executable by the Guild/Server Owner.')
-                .catch(console.error);
-            return;
-        }
 
         let enabled;
         const VOICE_ACCORDION_KEY_URL = `voice-accordion/${interaction.guildId}/settings`;

@@ -1,6 +1,4 @@
 const { SlashCommandBuilder } = require('@discordjs/builders');
-const { ring, ringEnabled } = require('../config.json');
-
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('invite')
@@ -11,14 +9,6 @@ module.exports = {
                 .setRequired(false)),
     async execute(interaction) {
         await interaction.deferReply();
-
-        // really awful way to enforce command permissions until Discord releases slash command permissions
-        if (ringEnabled && ring['1'] && !interaction.member.roles.cache.has(ring['1'])
-        && ring['2'] && !interaction.member.roles.cache.has(ring['2'])) {
-            await interaction.editReply('You do not have permission to create an invite.')
-                .catch(console.error);
-            return;
-        }
 
         let reason = interaction.options.getString('reason');
         const channel = interaction.channel;
