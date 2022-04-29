@@ -81,7 +81,8 @@ module.exports = {
                 regionValName = 'Automatic';
             }
             await interaction.editReply({
-                content: `The voice channel region override for ${basicVoiceChannelName} is ${regionValName}.`,
+                content: 'The voice channel region override for '
+                        + `${basicVoiceChannelName} is ${regionValName}.`,
                 components: [] })
                 .catch(console.error);
             return;
@@ -92,7 +93,8 @@ module.exports = {
         }
 
         await interaction.editReply({
-            content: `I'm switching the region for voice channel ${basicVoiceChannelName} to the ${regionValName} region...`,
+            content: 'I\'m switching the region for voice channel '
+                    + `${basicVoiceChannelName} to the ${regionValName} region...`,
             components: [] })
             .catch(console.error);
 
@@ -102,7 +104,8 @@ module.exports = {
             .catch(console.error);
 
         await interaction.editReply({
-            content: `I've successfully switched the region for voice channel ${basicVoiceChannelName} to the ${regionValName} region!`,
+            content: 'I\'ve successfully switched the region for voice channel '
+                    + `${basicVoiceChannelName} to the ${regionValName} region!`,
             components: [] })
             .catch(console.error);
 

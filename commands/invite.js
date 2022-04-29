@@ -25,7 +25,8 @@ module.exports = {
             .then(invite => inviteObj = invite)
             .catch(console.error);
 
-        await interaction.editReply(`I've successfully created a single-use 7 day server invite with invite code: ${inviteObj.code}`)
+        await interaction.editReply('I\'ve successfully created a single-use '
+            + `7 day server invite with invite code: ${inviteObj.code}`)
             .catch(console.error);
 
         return;

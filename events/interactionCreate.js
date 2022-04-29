@@ -2,7 +2,11 @@ module.exports = {
     name: 'interactionCreate',
     async execute(interaction) {
         const client = interaction.client;
-        if (!interaction.isCommand() && !interaction.isSelectMenu() && !interaction.isButton()) return;
+        if (!interaction.isCommand()
+            && !interaction.isSelectMenu()
+            && !interaction.isButton()) {
+            return;
+        }
 
         let command;
         if (interaction.isCommand()) {
@@ -22,8 +26,10 @@ module.exports = {
         }
         catch (error) {
             console.error(error);
-            return interaction.editReply({ content: 'There was an error while executing this command!', ephemeral: true })
-                .catch(console.error);
+            return interaction.editReply({
+                content: 'There was an error while executing this command!',
+                ephemeral: true,
+            }).catch(console.error);
         }
     },
 };
