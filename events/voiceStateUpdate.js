@@ -8,6 +8,7 @@ module.exports = {
             return;
         }
 
+        const baseIsAfk = accordionSettings.baseIsAfk;
         const voiceAccordionCategoryId = accordionSettings.category.id;
 
         // remove any accordion expand channels with no members left,
@@ -27,15 +28,23 @@ module.exports = {
 
             let numChannelsRemoved;
             if (
-                oldState.guild.channels.cache.filter(
+                (oldState.guild.channels.cache.filter(
                     (channel) =>
                         channel.type === 'GUILD_VOICE'
                         && channel.parentId === voiceAccordionCategoryId
                         && channel.members.size === 0
                         && isAccordionBaseChannel(channel.name, accordionSettings),
-                ).size === 0
+                ).size === 0) ||
+                (baseIsAfk && (oldState.guild.channels.cache.filter(
+                    (channel) =>
+                        channel.type === 'GUILD_VOICE'
+                        && channel.parentId === voiceAccordionCategoryId
+                        && channel.members.size > 0
+                        && isAccordionExpandChannel(channel.name, accordionSettings),
+                ).size > 0))
             ) {
                 // all base channels have at least one participant
+                // OR (for an afk base) all expand channels have at least one participant
                 // leave one empty expand channel reserved
                 numChannelsRemoved = emptyAccordionExpandChannels.length - 1;
             }
@@ -58,15 +67,26 @@ module.exports = {
         }
 
         // check if any accordion channels are empty and if the maximum accordion limit is filled.
-        // create another voice channel in the accordion if these conditions are met
+        // then create another voice channel in the accordion if these conditions are met.
+
+        // alternatively if all expand channels have at least 1 person when base ch is AFK, then generate
+        // another expand channel.
         if (newState.channel
-            && newState.guild.channels.cache.filter(
+            && ((newState.guild.channels.cache.filter(
                 (channel) =>
                     channel.type === 'GUILD_VOICE'
                     && channel.parentId === voiceAccordionCategoryId
                     && channel.members.size === 0
                     && isAccordionBaseOrExpandChannel(channel.name, accordionSettings),
-            ).size === 0
+            ).size === 0)
+                 || (baseIsAfk && newState.guild.channels.cache.filter(
+                     (channel) =>
+                         channel.type === 'GUILD_VOICE'
+                        && channel.parentId === voiceAccordionCategoryId
+                        && channel.members.size === 0
+                        && isAccordionExpandChannel(channel.name, accordionSettings),
+                 ).size === 0
+                 ))
             && newState.guild.channels.cache.filter(
                 (channel) =>
                     channel.type === 'GUILD_VOICE'
@@ -84,11 +104,23 @@ module.exports = {
                 const newVoiceChannelName = accordionSettings.expand.pop();
 
                 // const newVoiceChannel =
-                await newState.channel.clone({
-                    position: newState.channel.rawPosition,
-                    name: `${newVoiceChannelName}`,
+                // await newState.channel.clone({
+                //     position: newState.channel.rawPosition,
+                //     name: `${newVoiceChannelName}`,
+                //     bitrate: newState.guild.maximumBitrate,
+                // }).catch(console.error);
+
+                let categoryChannel;
+                newState.guild.channels.fetch(accordionSettings.category.id)
+                    .then(fetched => categoryChannel = fetched)
+                    .catch(console.error);
+
+                newState.guild.channels.create(`${newVoiceChannelName}`, {
+                    type: 'GUILD_VOICE',
                     bitrate: newState.guild.maximumBitrate,
-                }).catch(console.error);
+                }).then(channel =>
+                    channel.setParent(categoryChannel),
+                ).catch(console.error);
 
                 await setSettings(newState.guild.id, accordionSettings);
             }

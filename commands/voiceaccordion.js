@@ -6,16 +6,20 @@ module.exports = {
     data: new SlashCommandBuilder()
         .setName('voiceaccordion')
         .setDescription('Bot admin(s) only. '
-        + 'Toggle the voice accordion feature. Leave options empty to disable and clear.')
+        + 'Toggle the voice accordion feature.')
         .addChannelOption(option =>
             option.setName('category_channel')
                 .setDescription('Pick the category channel where the voice accordion will exist.')
                 .setRequired(false)
                 .addChannelTypes([ChannelType.GuildCategory]))
         .addStringOption(option =>
-            option.setName('base_ch_names')
+            option.setName('base_ch_name')
                 .setDescription('Unique name of the '
                 + 'initial voice channel to create for this accordion.')
+                .setRequired(false))
+        .addBooleanOption(option =>
+            option.setName('base_is_afk')
+                .setDescription('Is the base channel the AFK channel?')
                 .setRequired(false))
         .addStringOption(option =>
             option.setName('expand_ch_names')
@@ -36,18 +40,20 @@ module.exports = {
             .then(ret => enabled = ret);
         if (!enabled || !enabled.flag) {
             const voiceAccordionCategory = interaction.options.getChannel('category_channel');
-            let voiceAccordionBase = interaction.options.getString('base_ch_names');
+            const voiceAccordionBase = interaction.options.getString('base_ch_name');
             let voiceAccordionExpand = interaction.options.getString('expand_ch_names');
             let voiceAccordionIgnore = interaction.options.getString('ignore_ch_names');
+            const voiceAccordionBaseIsAfk = interaction.options.getBoolean('base_is_afk');
 
-            if (!voiceAccordionBase || !voiceAccordionCategory || !voiceAccordionExpand) {
+            if (!voiceAccordionBase || !voiceAccordionCategory || !voiceAccordionExpand
+                || !voiceAccordionBaseIsAfk) {
                 await interaction.editReply('Voice accordion is currently disabled. '
-                + 'Please provide category channel and base channel name to enable it.')
+                + 'Please provide category channel, base and expand channel names, '
+                + 'and whether the base channel is the AFK channel or not, to enable it.')
                     .catch(console.error);
                 return;
             }
 
-            voiceAccordionBase = voiceAccordionBase.split(',');
             voiceAccordionExpand = voiceAccordionExpand.split(',');
 
             if (voiceAccordionIgnore) {
@@ -65,6 +71,7 @@ module.exports = {
                 expandList: voiceAccordionExpand,
                 expandSize: voiceAccordionExpand.length,
                 ignore: voiceAccordionIgnore,
+                baseIsAfk: voiceAccordionBaseIsAfk,
             });
             await keyv.get(VOICE_ACCORDION_KEY_URL)
                 .then(ret => enabled = ret);
@@ -74,14 +81,12 @@ module.exports = {
                     .then(ret => categoryCh = ret);
 
                 let newVoiceChannelName;
-                for (let i = 0; i < voiceAccordionBase.length; i++) {
-                    newVoiceChannelName = voiceAccordionBase[i];
+                newVoiceChannelName = voiceAccordionBase;
 
-                    await categoryCh.createChannel(newVoiceChannelName, {
-                        type: 'GUILD_VOICE',
-                        bitrate: interaction.guild.maximumBitrate,
-                    }).catch(console.error);
-                }
+                await categoryCh.createChannel(newVoiceChannelName, {
+                    type: 'GUILD_VOICE',
+                    bitrate: interaction.guild.maximumBitrate,
+                }).catch(console.error);
 
                 if (voiceAccordionIgnore) {
                     for (let i = 0; i < voiceAccordionIgnore.length; i++) {
