@@ -1,5 +1,5 @@
 const { SlashCommandBuilder } = require('@discordjs/builders');
-const { ChannelType } = require('discord-api-types/v9');
+const { ChannelType } = require('discord.js');
 const { keyv } = require('../index');
 
 module.exports = {
@@ -84,7 +84,7 @@ module.exports = {
                 newVoiceChannelName = voiceAccordionBase;
 
                 await categoryCh.createChannel(newVoiceChannelName, {
-                    type: 'GUILD_VOICE',
+                    type: ChannelType.GuildVoice,
                     bitrate: interaction.guild.maximumBitrate,
                 }).catch(console.error);
 
@@ -93,7 +93,7 @@ module.exports = {
                         newVoiceChannelName = voiceAccordionIgnore[i];
 
                         await categoryCh.createChannel(newVoiceChannelName, {
-                            type: 'GUILD_VOICE',
+                            type: ChannelType.GuildVoice,
                             bitrate: interaction.guild.maximumBitrate,
                         }).catch(console.error);
                     }

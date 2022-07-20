@@ -1,4 +1,5 @@
 const { keyv } = require('../index');
+const { ChannelType } = require('discord.js');
 
 module.exports = {
     name: 'voiceStateUpdate',
@@ -18,7 +19,7 @@ module.exports = {
         if (oldState.channel) {
             const emptyAccordionExpandChannels = [];
             oldState.guild.channels.cache.filter(channel =>
-                channel.type === 'GUILD_VOICE'
+                channel.type === ChannelType.GuildVoice
                 && channel.parentId === voiceAccordionCategoryId
                 && isAccordionExpandChannel(channel.name, accordionSettings)
                 && (channel.members.size === 0),
@@ -30,14 +31,14 @@ module.exports = {
             if (
                 (oldState.guild.channels.cache.filter(
                     (channel) =>
-                        channel.type === 'GUILD_VOICE'
+                        channel.type === ChannelType.GuildVoice
                         && channel.parentId === voiceAccordionCategoryId
                         && channel.members.size === 0
                         && isAccordionBaseChannel(channel.name, accordionSettings),
                 ).size === 0) ||
                 (baseIsAfk && (oldState.guild.channels.cache.filter(
                     (channel) =>
-                        channel.type === 'GUILD_VOICE'
+                        channel.type === ChannelType.GuildVoice
                         && channel.parentId === voiceAccordionCategoryId
                         && channel.members.size > 0
                         && isAccordionExpandChannel(channel.name, accordionSettings),
@@ -74,14 +75,14 @@ module.exports = {
         if (newState.channel
             && ((newState.guild.channels.cache.filter(
                 (channel) =>
-                    channel.type === 'GUILD_VOICE'
+                    channel.type === ChannelType.GuildVoice
                     && channel.parentId === voiceAccordionCategoryId
                     && channel.members.size === 0
                     && isAccordionBaseOrExpandChannel(channel.name, accordionSettings),
             ).size === 0)
                  || (baseIsAfk && newState.guild.channels.cache.filter(
                      (channel) =>
-                         channel.type === 'GUILD_VOICE'
+                         channel.type === ChannelType.GuildVoice
                         && channel.parentId === voiceAccordionCategoryId
                         && channel.members.size === 0
                         && isAccordionExpandChannel(channel.name, accordionSettings),
@@ -89,7 +90,7 @@ module.exports = {
                  ))
             && newState.guild.channels.cache.filter(
                 (channel) =>
-                    channel.type === 'GUILD_VOICE'
+                    channel.type === ChannelType.GuildVoice
                     && channel.parentId === voiceAccordionCategoryId,
             ).size < (accordionSettings.base.length
                 + accordionSettings.expandSize + accordionSettings.ignore.length)
@@ -98,7 +99,7 @@ module.exports = {
                 accordionSettings);
             if (checkIfAccordionChannel
                 && newState.channel.parentId === voiceAccordionCategoryId
-                && newState.channel.type === 'GUILD_VOICE') {
+                && newState.channel.type === ChannelType.GuildVoice) {
 
                 // pull name out from expand
                 const newVoiceChannelName = accordionSettings.expand.pop();
@@ -115,12 +116,11 @@ module.exports = {
                     .then(fetched => categoryChannel = fetched)
                     .catch(console.error);
 
-                newState.guild.channels.create(`${newVoiceChannelName}`, {
-                    type: 'GUILD_VOICE',
+                categoryChannel.children.create({
+                    name: `${newVoiceChannelName}`,
+                    type: ChannelType.GuildVoice,
                     bitrate: newState.guild.maximumBitrate,
-                }).then(channel =>
-                    channel.setParent(categoryChannel),
-                ).catch(console.error);
+                }).catch(console.error);
 
                 await setSettings(newState.guild.id, accordionSettings);
             }

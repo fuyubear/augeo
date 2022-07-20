@@ -1,15 +1,17 @@
+const { InteractionType } = require('discord.js');
+
 module.exports = {
     name: 'interactionCreate',
     async execute(interaction) {
         const client = interaction.client;
-        if (!interaction.isCommand()
+        if (interaction.type !== InteractionType.ApplicationCommand
             && !interaction.isSelectMenu()
             && !interaction.isButton()) {
             return;
         }
 
         let command;
-        if (interaction.isCommand()) {
+        if (interaction.type === InteractionType.ApplicationCommand) {
             command = client.commands.get(interaction.commandName);
         }
         else {

@@ -1,5 +1,5 @@
 const { SlashCommandBuilder } = require('@discordjs/builders');
-const { ChannelType } = require('discord-api-types/v9');
+const { ChannelType } = require('discord.js');
 const { keyv } = require('../index');
 
 // const voiceRegionDict = {
@@ -51,7 +51,7 @@ module.exports = {
                         .addChoice('🌅 California (US West)', 'us-west')
                         .addChoice('🇯🇵 Japan', 'japan')
                         .addChoice('🇭🇰 Hong Kong', 'hongkong')
-                        .addChoice('🇪🇺 Europe', 'europe')
+                        .addChoice('🇪🇺 Europe', 'rotterdam')
                         .addChoice('🇦🇺 Sydney', 'sydney')
                         .addChoice('🇮🇳 India', 'india')
                         .addChoice('🇸🇬 Singapore', 'singapore')
@@ -100,7 +100,8 @@ module.exports = {
 
         await voiceChannel.edit({
             name: `${basicVoiceChannelName}`,
-            rtcRegion: regionVal }, `Edited by a user with author ID: ${interaction.member.id}`)
+            rtcRegion: regionVal,
+            reason: `Edited by a user with author ID: ${interaction.member.id}` })
             .catch(console.error);
 
         await interaction.editReply({

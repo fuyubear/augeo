@@ -4,7 +4,7 @@ module.exports = {
     async execute(client) {
         const fs = require('fs');
         const { REST } = require('@discordjs/rest');
-        const { Routes } = require('discord-api-types/v9');
+        const { Routes } = require('discord-api-types/v10');
         const { clientId, guildTestId, token } = require('../config.json');
 
         const commands = [];
@@ -16,7 +16,7 @@ module.exports = {
             commands.push(command.data.toJSON());
         }
 
-        const rest = new REST({ version: '9' }).setToken(token);
+        const rest = new REST({ version: '10' }).setToken(token);
 
         try {
             console.log('Started refreshing application (/) commands.');

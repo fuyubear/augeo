@@ -1,5 +1,5 @@
 /* eslint-disable indent */
-const { Permissions } = require('discord.js');
+const { PermissionsBitField } = require('discord.js');
 const { SlashCommandBuilder } = require('@discordjs/builders');
 const subcommandFiles = `${__dirname}/role`;
 const { keyv } = require('../index');
@@ -120,7 +120,7 @@ module.exports = {
     },
     async executeThis(interaction, plainRoleId) {
         // check bot hierarchy to satisfy Discord permission restrictions
-        if (!interaction.guild.me.permissions.has(Permissions.FLAGS.MANAGE_ROLES)) {
+        if (!interaction.guild.members.me.permissions.has(PermissionsBitField.Flags.ManageRoles)) {
             await interaction.editReply('I do not have any permission to Manage Roles in this server.')
                 .catch(console.error);
             return;
@@ -147,7 +147,7 @@ module.exports = {
                 }
 
                 // check for Manage Roles permissions for role manager commands
-                if (!interaction.memberPermissions.has(Permissions.FLAGS.MANAGE_ROLES)) {
+                if (!interaction.memberPermissions.has(PermissionsBitField.Flags.ManageRoles)) {
                     await interaction.editReply('You do not have any permission to Manage Roles in this server.')
                         .catch(console.error);
                     return;
@@ -205,9 +205,9 @@ module.exports = {
         return false;
     }
 
-    if (interaction.guild.me.roles.highest.comparePositionTo(roleSelected) <= 0) {
+    if (interaction.guild.members.me.roles.highest.comparePositionTo(roleSelected) <= 0) {
         await interaction.editReply(
-            'The selected role(s) is/are ranked higher than or equal to your highest role,'
+            'The selected role(s) is/are ranked higher than or equal to my highest role,'
             + ' so I cannot manage the selected role(s). To fix this, try moving the selected role(s) lower than my highest role'
             + ' in the role hierarchy. Read here for more: https://support.discord.com/hc/en-us/articles/214836687-Role-Management-101')
             .catch(console.error);

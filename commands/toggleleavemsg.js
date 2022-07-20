@@ -1,4 +1,4 @@
-const { Permissions } = require('discord.js');
+const { PermissionsBitField } = require('discord.js');
 const { SlashCommandBuilder } = require('@discordjs/builders');
 const { keyv } = require('../index');
 
@@ -16,11 +16,11 @@ module.exports = {
         await keyv.get(THREAD_PERSIST_KEY_URL)
             .then(ret => enabled = ret);
         if (!enabled || !enabled.flag) {
-            const botPermissionsInSystemMessagesChannel = interaction.guild.me.permissionsIn(
+            const botPermissionsInSystemMessagesChannel = interaction.guild.members.me.permissionsIn(
                 interaction.guild.systemChannel,
             );
             if (!(botPermissionsInSystemMessagesChannel.has(
-                [Permissions.FLAGS.VIEW_CHANNEL, Permissions.FLAGS.SEND_MESSAGES],
+                [PermissionsBitField.Flags.ViewChannel, PermissionsBitField.Flags.SendMessages],
             ))) {
                 await interaction.editReply('I cannot see and post messages in the '
                 + 'System Messages Channel, so user leave messages was not enabled.')
