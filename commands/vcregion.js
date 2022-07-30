@@ -30,7 +30,7 @@ module.exports = {
                     option.setName('voice_channel')
                         .setDescription('Pick the voice channel to view its region override.')
                         .setRequired(true)
-                        .addChannelTypes([ChannelType.GuildVoice, ChannelType.GuildStageVoice]),
+                        .addChannelTypes(ChannelType.GuildVoice, ChannelType.GuildStageVoice),
                 ))
         .addSubcommand(subcommand =>
             subcommand.setName('edit')
@@ -39,25 +39,28 @@ module.exports = {
                     option.setName('voice_channel')
                         .setDescription('Pick the voice channel to edit.')
                         .setRequired(true)
-                        .addChannelTypes([ChannelType.GuildVoice, ChannelType.GuildStageVoice]))
+                        .addChannelTypes(ChannelType.GuildVoice, ChannelType.GuildStageVoice))
                 .addStringOption(option =>
                     option.setName('voice_region')
                         .setRequired(true)
                         .setDescription('Pick the voice region for the channel')
-                        .addChoice('🌐 Auto', 'auto')
-                        .addChoice('🗽 New York City (US East)', 'us-east')
-                        .addChoice('🏙️ Chicago (US Central)', 'us-central')
-                        .addChoice('🤠 Dallas (US South)', 'us-south')
-                        .addChoice('🌅 California (US West)', 'us-west')
-                        .addChoice('🇯🇵 Japan', 'japan')
-                        .addChoice('🇭🇰 Hong Kong', 'hongkong')
-                        .addChoice('🇪🇺 Europe', 'rotterdam')
-                        .addChoice('🇦🇺 Sydney', 'sydney')
-                        .addChoice('🇮🇳 India', 'india')
-                        .addChoice('🇸🇬 Singapore', 'singapore')
-                        .addChoice('🇿🇦 South Africa', 'southafrica')
-                        .addChoice('🇧🇷 Brazil', 'brazil')
-                        .addChoice('🇷🇺 Russia', 'russia')),
+                        .addChoices(
+                            { name: '🌐 Auto', value: 'auto' },
+                            { name: '🗽 New York City (US East)', value: 'us-east' },
+                            { name: '🏙️ Chicago (US Central)', value: 'us-central' },
+                            { name: '🤠 Dallas (US South)', value: 'us-south' },
+                            { name: '🌅 California (US West)', value: 'us-west' },
+                            { name: '🇯🇵 Japan', value: 'japan' },
+                            { name: '🇭🇰 Hong Kong', value: 'hongkong' },
+                            { name: '🇳🇱 Rotterdam', value: 'rotterdam' },
+                            { name: '🇦🇺 Sydney', value: 'sydney' },
+                            { name: '🇮🇳 India', value: 'india' },
+                            { name: '🇸🇬 Singapore', value: 'singapore' },
+                            { name: '🇿🇦 South Africa', value: 'southafrica' },
+                            { name: '🇧🇷 Brazil', value: 'brazil' },
+                            { name: '🇷🇺 Russia', value: 'russia' },
+                        ),
+                ),
         ),
     async execute(interaction) {
         await interaction.deferReply();
@@ -98,19 +101,30 @@ module.exports = {
             components: [] })
             .catch(console.error);
 
+        let editSuccess = true;
         await voiceChannel.edit({
             name: `${basicVoiceChannelName}`,
             rtcRegion: regionVal,
             reason: `Edited by a user with author ID: ${interaction.member.id}` })
-            .catch(console.error);
+            .catch((err) => {
+                editSuccess = false;
+                console.error(err);
+            });
 
-        await interaction.editReply({
-            content: 'I\'ve successfully switched the region for voice channel '
-                    + `${basicVoiceChannelName} to the ${regionValName} region!`,
-            components: [] })
-            .catch(console.error);
-
-        return;
+        if (editSuccess === true) {
+            await interaction.editReply({
+                content: 'I\'ve successfully switched the region for voice channel '
+                        + `${basicVoiceChannelName} to the ${regionValName} region!`,
+                components: [] })
+                .catch(console.error);
+        }
+        else {
+            await interaction.editReply({
+                content: 'I failed to switch the region for voice channel '
+                        + `${basicVoiceChannelName} to the ${regionValName} region.`,
+                components: [] })
+                .catch(console.error);
+        }
     },
 };
 
