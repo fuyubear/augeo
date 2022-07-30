@@ -5,7 +5,7 @@ module.exports = {
     data: new SlashCommandBuilder()
         .setName('togglevoiceregions')
         .setDescription('Bot admin(s) only. '
-        + 'Toggle users to change regions without Edit Channels + emojis on channel names.'),
+        + 'Toggle users to change regions without Edit Channels perms.'),
     async execute(interaction) {
         await interaction.deferReply();
 
