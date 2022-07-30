@@ -112,11 +112,11 @@ module.exports = {
                 // }).catch(console.error);
 
                 let categoryChannel;
-                newState.guild.channels.fetch(accordionSettings.category.id)
+                await newState.guild.channels.fetch(accordionSettings.category.id)
                     .then(fetched => categoryChannel = fetched)
                     .catch(console.error);
 
-                categoryChannel.children.create({
+                await categoryChannel.children.create({
                     name: `${newVoiceChannelName}`,
                     type: ChannelType.GuildVoice,
                     bitrate: newState.guild.maximumBitrate,

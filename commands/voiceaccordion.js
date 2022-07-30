@@ -11,7 +11,7 @@ module.exports = {
             option.setName('category_channel')
                 .setDescription('Pick the category channel where the voice accordion will exist.')
                 .setRequired(false)
-                .addChannelTypes([ChannelType.GuildCategory]))
+                .addChannelTypes(ChannelType.GuildCategory))
         .addStringOption(option =>
             option.setName('base_ch_name')
                 .setDescription('Unique name of the '
@@ -46,7 +46,7 @@ module.exports = {
             const voiceAccordionBaseIsAfk = interaction.options.getBoolean('base_is_afk');
 
             if (!voiceAccordionBase || !voiceAccordionCategory || !voiceAccordionExpand
-                || !voiceAccordionBaseIsAfk) {
+                || voiceAccordionBaseIsAfk === null) {
                 await interaction.editReply('Voice accordion is currently disabled. '
                 + 'Please provide category channel, base and expand channel names, '
                 + 'and whether the base channel is the AFK channel or not, to enable it.')
@@ -83,7 +83,8 @@ module.exports = {
                 let newVoiceChannelName;
                 newVoiceChannelName = voiceAccordionBase;
 
-                await categoryCh.createChannel(newVoiceChannelName, {
+                await categoryCh.children.create({
+                    name: newVoiceChannelName,
                     type: ChannelType.GuildVoice,
                     bitrate: interaction.guild.maximumBitrate,
                 }).catch(console.error);
@@ -92,7 +93,8 @@ module.exports = {
                     for (let i = 0; i < voiceAccordionIgnore.length; i++) {
                         newVoiceChannelName = voiceAccordionIgnore[i];
 
-                        await categoryCh.createChannel(newVoiceChannelName, {
+                        await categoryCh.children.create({
+                            name: newVoiceChannelName,
                             type: ChannelType.GuildVoice,
                             bitrate: interaction.guild.maximumBitrate,
                         }).catch(console.error);
