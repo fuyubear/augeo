@@ -18,9 +18,7 @@ module.exports = {
                     option.setName('ring_level')
                         .setDescription('Ring level to add user to.')
                         .setRequired(true)
-                        .addChoice('Ring 1', 1)
-                        .addChoice('Ring 2', 2)
-                        .addChoice('Ring 3', 3),
+                        .addChoices({ name: 'Ring 1', value: 1 }, { name: 'Ring 2', value: 2 }, { name: 'Ring 3', value: 3 }),
                 ))
         .addSubcommand(subcommand =>
             subcommand.setName('rm')
@@ -34,9 +32,7 @@ module.exports = {
                     option.setName('ring_level')
                         .setDescription('Ring level to remove user from.')
                         .setRequired(true)
-                        .addChoice('Ring 1', 1)
-                        .addChoice('Ring 2', 2)
-                        .addChoice('Ring 3', 3),
+                        .addChoices({ name: 'Ring 1', value: 1 }, { name: 'Ring 2', value: 2 }, { name: 'Ring 3', value: 3 }),
                 )),
     async execute(interaction) {
         await interaction.deferReply();
