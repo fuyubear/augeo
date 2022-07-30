@@ -11,9 +11,9 @@ module.exports = {
         await interaction.deferReply();
 
         let enabled;
-        const THREAD_PERSIST_KEY_URL = `leave-msg/${interaction.guildId}/settings`;
+        const LEAVE_MSG_KEY_URL = `leave-msg/${interaction.guildId}/settings`;
 
-        await keyv.get(THREAD_PERSIST_KEY_URL)
+        await keyv.get(LEAVE_MSG_KEY_URL)
             .then(ret => enabled = ret);
         if (!enabled || !enabled.flag) {
             const botPermissionsInSystemMessagesChannel = interaction.guild.members.me.permissionsIn(
@@ -28,10 +28,10 @@ module.exports = {
                 return;
             }
 
-            await keyv.set(THREAD_PERSIST_KEY_URL, {
+            await keyv.set(LEAVE_MSG_KEY_URL, {
                 flag: true,
             });
-            await keyv.get(THREAD_PERSIST_KEY_URL)
+            await keyv.get(LEAVE_MSG_KEY_URL)
                 .then(ret => enabled = ret);
             if (enabled.flag) {
                 await interaction.editReply('Leave messsages are enabled.')
@@ -40,13 +40,13 @@ module.exports = {
             }
         }
         else if (enabled.flag) {
-            await keyv.set(THREAD_PERSIST_KEY_URL, {
+            await keyv.set(LEAVE_MSG_KEY_URL, {
                 flag: false,
             });
-            await keyv.get(THREAD_PERSIST_KEY_URL)
+            await keyv.get(LEAVE_MSG_KEY_URL)
                 .then(ret => enabled = ret);
             if (!enabled.flag) {
-                await interaction.editReply('Thread persistance is disabled.')
+                await interaction.editReply('Leave messsages is disabled.')
                     .catch(console.error);
                 return;
             }

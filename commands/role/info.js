@@ -7,7 +7,7 @@ module.exports.execute = async function(interaction) {
         return;
     }
 
-    interaction.guild.members.fetch()
+    await interaction.guild.members.fetch()
         .then(console.log)
         .catch(console.error);
 
