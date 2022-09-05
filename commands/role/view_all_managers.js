@@ -6,6 +6,14 @@ module.exports.execute = async function(interaction) {
 
     let messageContent = '';
 
+    await interaction.guild.members.fetch()
+        .then(console.log)
+        .catch(console.error);
+
+    await interaction.guild.roles.fetch()
+        .then(console.log)
+        .catch(console.error);
+
     const roles = [];
     interaction.guild.roles.cache.each(value =>
         roles.push(value),

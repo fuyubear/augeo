@@ -21,7 +21,7 @@ module.exports = {
             await keyv.get(THREAD_PERSIST_KEY_URL)
                 .then(ret => enabled = ret);
             if (enabled.flag) {
-                await interaction.editReply('Voice region functionality is enabled.')
+                await interaction.editReply('Voice region edit functionality is enabled.')
                     .catch(console.error);
                 return;
             }
@@ -33,7 +33,7 @@ module.exports = {
             await keyv.get(THREAD_PERSIST_KEY_URL)
                 .then(ret => enabled = ret);
             if (!enabled.flag) {
-                await interaction.editReply('Voice region functionality is disabled.')
+                await interaction.editReply('Voice region edit functionality is disabled.')
                     .catch(console.error);
                 return;
             }

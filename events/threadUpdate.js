@@ -19,8 +19,8 @@ module.exports = {
             let logs;
             await oldThread.guild.fetchAuditLogs().then(ret => logs = ret);
             logs = logs.entries.filter(log =>
-                log.actionType === 'UPDATE'
-                && log.targetType === 'THREAD',
+                log.actionType === 'Update'
+                && log.targetType === 'Thread',
             );
 
             const logIter = logs.entries();

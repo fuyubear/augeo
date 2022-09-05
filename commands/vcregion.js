@@ -120,7 +120,7 @@ module.exports = {
         }
         else {
             await interaction.editReply({
-                content: 'I failed to switch the region for voice channel '
+                content: 'I\'ve failed to switch the region for voice channel '
                         + `${basicVoiceChannelName} to the ${regionValName} region.`,
                 components: [] })
                 .catch(console.error);

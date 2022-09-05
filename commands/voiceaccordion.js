@@ -9,13 +9,13 @@ module.exports = {
         + 'Toggle the voice accordion feature.')
         .addChannelOption(option =>
             option.setName('category_channel')
-                .setDescription('Pick the category channel where the voice accordion will exist.')
+                .setDescription('Pick an empty category channel where the voice accordion will exist.')
                 .setRequired(false)
                 .addChannelTypes(ChannelType.GuildCategory))
         .addStringOption(option =>
             option.setName('base_ch_name')
                 .setDescription('Unique name of the '
-                + 'initial voice channel to create for this accordion.')
+                + 'base voice channel to create for this accordion.')
                 .setRequired(false))
         .addBooleanOption(option =>
             option.setName('base_is_afk')
@@ -24,7 +24,7 @@ module.exports = {
         .addStringOption(option =>
             option.setName('expand_ch_names')
                 .setDescription('Comma-separated list of '
-                + 'unique names of accordion expansion channels.')
+                + 'unique names of this accordion\'s expansion channels.')
                 .setRequired(false))
         .addStringOption(option =>
             option.setName('ignore_ch_names')
@@ -48,7 +48,7 @@ module.exports = {
             if (!voiceAccordionBase || !voiceAccordionCategory || !voiceAccordionExpand
                 || voiceAccordionBaseIsAfk === null) {
                 await interaction.editReply('Voice accordion is currently disabled. '
-                + 'Please provide category channel, base and expand channel names, '
+                + 'Please provide category channel, base, and expand channel names, '
                 + 'and whether the base channel is the AFK channel or not, to enable it.')
                     .catch(console.error);
                 return;
@@ -102,8 +102,8 @@ module.exports = {
                 }
 
                 await interaction.editReply('Voice accordion is enabled. '
-                + '**Do not delete any channels nor toggle voice regions. '
-                + 'Otherwise you will need to disable, then reenable voice accordion '
+                + '**Do not delete any channels. '
+                + 'Otherwise you will need to disable, then reenable the voice accordion '
                 + 'for it to work well again.** If needed, edit appropriate permissions '
                 + 'for ignored channels.')
                     .catch(console.error);
