@@ -1,5 +1,5 @@
 const { keyv } = require('../index');
-// const { AuditLogActionType, AuditLogTargetType } = require('discord.js');
+const { AuditLogEvent } = require('discord.js');
 
 module.exports = {
     name: 'threadUpdate',
@@ -10,18 +10,13 @@ module.exports = {
         }
 
         if (newThread.archived && !(oldThread.archived)) {
-            // now - 20 seconds
-            const old = Date.now() - 20000;
-
-            await new Promise(r => setTimeout(r, 5000));
+            // sleep(10)
+            await new Promise(r => setTimeout(r, 10000));
 
             // fetch audit logs where a thread was updated
             let logs;
             await oldThread.guild.fetchAuditLogs().then(ret => logs = ret);
-            logs = logs.entries.filter(log =>
-                log.actionType === 'Update'
-                && log.targetType === 'Thread',
-            );
+            logs = logs.entries.filter(log => log.action === AuditLogEvent.ThreadUpdate);
 
             const logIter = logs.entries();
             while (true) {
@@ -31,7 +26,7 @@ module.exports = {
                 }
 
                 const log = next.value[1];
-                if (log.createdAt.getTime() < old) {
+                if (log.createdAt.getTime() < Date.now() - 20000) {
                     continue;
                 }
                 if (log.target.id === oldThread.id) {

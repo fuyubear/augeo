@@ -1,6 +1,6 @@
 {
   "name": "augeo",
-  "version": "4.0.2-dev",
+  "version": "4.0.3",
   "description": "",
   "main": "index.js",
   "scripts": {
