@@ -1,4 +1,8 @@
 const { keyv } = require('../index');
+const { userMention } = require('discord.js');
+
+const { parentLogger } = require('../logger');
+const logger = parentLogger.child({ module: 'events-guildMemberRemove' });
 
 module.exports = {
     name: 'guildMemberRemove',
@@ -8,9 +12,9 @@ module.exports = {
             return;
         }
 
-        await member.guild.systemChannel.send(
-            `${member.user.tag} has left ${member.guild.name}.`,
-        ).catch(console.error);
+        const msg = `${userMention(member.id)} (${member.guild.id}) has left the server.`;
+        logger.info(msg);
+        await member.guild.systemChannel.send(msg).catch(err => logger.error(err));
         return;
     },
 };

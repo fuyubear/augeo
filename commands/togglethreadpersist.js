@@ -1,10 +1,13 @@
 const { SlashCommandBuilder } = require('@discordjs/builders');
 const { keyv } = require('../index');
 
+const { parentLogger } = require('../logger');
+const logger = parentLogger.child({ module: 'commands-togglethreadpersist' });
+
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('togglethreadpersist')
-        .setDescription('Bot admin(s) only. Toggle all threads to auto-archive or not.'),
+        .setDescription('Toggle all threads to auto-archive or not.'),
     async execute(interaction) {
         await interaction.deferReply();
 
@@ -20,8 +23,9 @@ module.exports = {
             await keyv.get(THREAD_PERSIST_KEY_URL)
                 .then(ret => enabled = ret);
             if (enabled.flag) {
+                logger.info(`Thread persistance functionality is enabled for guild ${interaction.guildId}`);
                 await interaction.editReply('Thread persistance is enabled.')
-                    .catch(console.error);
+                    .catch(err => logger.error(err));
                 return;
             }
         }
@@ -32,13 +36,15 @@ module.exports = {
             await keyv.get(THREAD_PERSIST_KEY_URL)
                 .then(ret => enabled = ret);
             if (!enabled.flag) {
+                logger.info(`Thread persistance functionality is disabled for guild ${interaction.guildId}`);
                 await interaction.editReply('Thread persistance is disabled.')
-                    .catch(console.error);
+                    .catch(err => logger.error(err));
                 return;
             }
         }
 
-        await interaction.editReply('DB error: Failed to toggle thread persistance setting.')
-            .catch(console.error);
+        logger.error(`DB error: Failed to toggle the thread persistance setting for guild ${interaction.guildId}`);
+        await interaction.editReply('DB error: Failed to toggle the thread persistance setting.')
+            .catch(err => logger.error(err));
     },
 };

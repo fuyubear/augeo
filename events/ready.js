@@ -7,6 +7,9 @@ module.exports = {
         const { Routes } = require('discord-api-types/v10');
         const { clientId, guildTestId, token } = require('../config.json');
 
+        const { parentLogger } = require('../logger');
+        const logger = parentLogger.child({ module: 'events-ready' });
+
         const commands = [];
         const commandFiles = fs.readdirSync(`${process.cwd()}/commands`)
             .filter(file => file.endsWith('.js'));
@@ -19,14 +22,14 @@ module.exports = {
         const rest = new REST({ version: '10' }).setToken(token);
 
         try {
-            console.log('Started refreshing application (/) commands.');
+            logger.info('Started refreshing application (/) commands.');
 
             if (guildTestId) {
                 await rest.put(
                     Routes.applicationGuildCommands(clientId, guildTestId),
                     { body: commands },
                 );
-                console.log('Successfully reloaded application (/) commands for the '
+                logger.info('Successfully reloaded application (/) commands for the '
                             + 'selected test guild. '
                             + 'Changes to the command details should show up soon.');
             }
@@ -35,14 +38,15 @@ module.exports = {
                     Routes.applicationCommands(clientId),
                     { body: commands },
                 );
-                console.log('Successfully reloaded application (/) commands for all guilds. '
+                logger.info('Successfully reloaded application (/) commands for all guilds. '
                             + 'Please give some time for command changes to propagate.');
             }
         }
         catch (error) {
+            logger.error(error);
             console.error(error);
         }
 
-        console.log(`Ready! Logged in as ${client.user.tag}`);
+        logger.info(`Ready! Logged in as ${client.user.tag}`);
     },
 };

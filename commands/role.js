@@ -5,6 +5,9 @@ const subcommandFiles = `${__dirname}/role`;
 const { keyv } = require('../index');
 const { botAdminIds } = require('../config.json');
 
+const { parentLogger } = require('../logger');
+const logger = parentLogger.child({ module: 'commands-role' });
+
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('role')
@@ -21,6 +24,11 @@ module.exports = {
                     option.setName('role')
                         .setDescription('Role to add user to (must be a manager for this role).')
                         .setRequired(true),
+                )
+                .addStringOption(option =>
+                    option.setName('reason')
+                        .setDescription('Optionally add a reason for adding this user')
+                        .setRequired(false),
                 ))
         .addSubcommand(subcommand =>
             subcommand.setName('rm')
@@ -34,6 +42,11 @@ module.exports = {
                     option.setName('role')
                         .setDescription('Role to remove user from (must be a manager for this role).')
                         .setRequired(true),
+                )
+                .addStringOption(option =>
+                    option.setName('reason')
+                        .setDescription('Optionally add a reason for removing this user')
+                        .setRequired(false),
                 ))
         .addSubcommand(subcommand =>
             subcommand.setName('add_manager')
@@ -97,7 +110,12 @@ module.exports = {
                 ))
         .addSubcommand(subcommand =>
             subcommand.setName('view_all_managers')
-                .setDescription('List all managers for every role that has them. Only executable by the Guild/Server Owner.'))
+                .setDescription('List all managers for all roles. Only executable by the Guild/Server Owner.')
+                .addStringOption(option =>
+                    option.setName('confirm')
+                        .setDescription('WARNING: All manager user/roles will be pinged (unsanitized output)! Continue?')
+                        .setRequired(true),
+                ))
         .addSubcommand(subcommand =>
             subcommand.setName('reset')
                 .setDescription('Remove all managers from a role.')
@@ -116,13 +134,15 @@ module.exports = {
                 )),
     async execute(interaction) {
         await interaction.deferReply();
+        await interaction.editReply('Fetching results...')
+            .catch(err => logger.error(err));
         await this.executeThis(interaction, undefined);
     },
     async executeThis(interaction, plainRoleId) {
         // check bot hierarchy to satisfy Discord permission restrictions
         if (!interaction.guild.members.me.permissions.has(PermissionsBitField.Flags.ManageRoles)) {
             await interaction.editReply('I do not have any permission to Manage Roles in this server.')
-                .catch(console.error);
+                .catch(err => logger.error(err));
             return;
         }
 
@@ -149,7 +169,7 @@ module.exports = {
                 // check for Manage Roles permissions for role manager commands
                 if (!interaction.memberPermissions.has(PermissionsBitField.Flags.ManageRoles)) {
                     await interaction.editReply('You do not have any permission to Manage Roles in this server.')
-                        .catch(console.error);
+                        .catch(err => logger.error(err));
                     return;
                 }
                 break;
@@ -160,7 +180,7 @@ module.exports = {
                 const managerCheck = await isManager(interaction, plainRoleId);
                 if (!managerCheck) {
                     await interaction.editReply('You are not a manager for this role.')
-                        .catch(console.error);
+                        .catch(err => logger.error(err));
                     return;
                 }
                 break;
@@ -169,7 +189,7 @@ module.exports = {
                 if ((interaction.guild.ownerId !== interaction.member.id)
                     && (!(botAdminIds.includes(interaction.member.id)))) {
                         await interaction.editReply('Only executable by the Guild/Server Owner.')
-                            .catch(console.error);
+                            .catch(err => logger.error(err));
                         return;
                 }
                 break;
@@ -196,12 +216,12 @@ module.exports = {
  async function isValidRoleForManagement(interaction, roleSelected, isManagerRole) {
     if (roleSelected.name === '@everyone') {
         await interaction.editReply('I cannot manage the `@everyone` role.')
-            .catch(console.error);
+            .catch(err => logger.error(err));
         return false;
     }
     else if (roleSelected.managed) {
         await interaction.editReply('I cannot manage roles managed by integrations like bots.')
-            .catch(console.error);
+            .catch(err => logger.error(err));
         return false;
     }
 
@@ -210,7 +230,7 @@ module.exports = {
             'The selected role(s) is/are ranked higher than or equal to my highest role,'
             + ' so I cannot manage the selected role(s). To fix this, try moving the selected role(s) lower than my highest role'
             + ' in the role hierarchy. Read here for more: https://support.discord.com/hc/en-us/articles/214836687-Role-Management-101')
-            .catch(console.error);
+            .catch(err => logger.error(err));
         return false;
     }
 
@@ -221,7 +241,7 @@ module.exports = {
             'The selected role(s) is/are ranked higher than or equal to your highest role,'
             + ' so you cannot manage the selected role(s). To fix this, try moving the selected role(s) lower than your highest role'
             + ' in the role hierarchy. Read here for more: https://support.discord.com/hc/en-us/articles/214836687-Role-Management-101')
-            .catch(console.error);
+            .catch(err => logger.error(err));
         return false;
     }
 

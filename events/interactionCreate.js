@@ -1,5 +1,8 @@
 const { InteractionType } = require('discord.js');
 
+const { parentLogger } = require('../logger');
+const logger = parentLogger.child({ module: 'events-interactionCreate' });
+
 module.exports = {
     name: 'interactionCreate',
     async execute(interaction) {
@@ -27,11 +30,11 @@ module.exports = {
             await command.execute(interaction);
         }
         catch (error) {
-            console.error(error);
+            logger.error(error);
             return interaction.editReply({
                 content: 'There was an error while executing this command!',
                 ephemeral: true,
-            }).catch(console.error);
+            }).catch(err => logger.error(err));
         }
     },
 };

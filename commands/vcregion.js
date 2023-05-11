@@ -2,6 +2,10 @@ const { SlashCommandBuilder } = require('@discordjs/builders');
 const { ChannelType } = require('discord.js');
 const { keyv } = require('../index');
 
+const { parentLogger } = require('../logger');
+const logger = parentLogger.child({ module: 'commands-vcregion' });
+
+// TODO: look into dynamically collecting settable voice regions from Discord API
 // const voiceRegionDict = {
 //     'auto': { 'name': 'Auto', 'emoji': '🌐' },
 //     'us-east': { 'name': 'New York City (US East)', 'emoji': '🗽' },
@@ -22,10 +26,10 @@ const { keyv } = require('../index');
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('vcregion')
-        .setDescription('Manage voice channel region overrides. Only use if necessary.')
+        .setDescription('DEPRECATED! Manage voice channel region overrides. Only use if necessary.')
         .addSubcommand(subcommand =>
             subcommand.setName('view')
-                .setDescription('View a voice channel\'s region override.')
+                .setDescription('DEPRECATED: join the voice channel directly to view! View a voice channel\'s region override.')
                 .addChannelOption(option =>
                     option.setName('voice_channel')
                         .setDescription('Pick the voice channel to view its region override.')
@@ -34,7 +38,7 @@ module.exports = {
                 ))
         .addSubcommand(subcommand =>
             subcommand.setName('edit')
-                .setDescription('Edit a voice channel\'s voice region.')
+                .setDescription('DEPRECATED: edit the voice channel directly! Edit a voice channel\'s voice region.')
                 .addChannelOption(option =>
                     option.setName('voice_channel')
                         .setDescription('Pick the voice channel to edit.')
@@ -68,7 +72,7 @@ module.exports = {
         const settings = await getSettings(interaction.guildId);
         if (!settings || !settings.flag) {
             await interaction.editReply('This command and its functionality is disabled.')
-                .catch(console.error);
+                .catch(err => logger.error(err));
             return;
         }
 
@@ -87,7 +91,7 @@ module.exports = {
                 content: 'The voice channel region override for '
                         + `${basicVoiceChannelName} is ${regionValName}.`,
                 components: [] })
-                .catch(console.error);
+                .catch(err => logger.error(err));
             return;
         }
 
@@ -99,7 +103,7 @@ module.exports = {
             content: 'I\'m switching the region for voice channel '
                     + `${basicVoiceChannelName} to the ${regionValName} region...`,
             components: [] })
-            .catch(console.error);
+            .catch(err => logger.error(err));
 
         let editSuccess = true;
         await voiceChannel.edit({
@@ -116,14 +120,14 @@ module.exports = {
                 content: 'I\'ve successfully switched the region for voice channel '
                         + `${basicVoiceChannelName} to the ${regionValName} region!`,
                 components: [] })
-                .catch(console.error);
+                .catch(err => logger.error(err));
         }
         else {
             await interaction.editReply({
                 content: 'I\'ve failed to switch the region for voice channel '
                         + `${basicVoiceChannelName} to the ${regionValName} region.`,
                 components: [] })
-                .catch(console.error);
+                .catch(err => logger.error(err));
         }
     },
 };

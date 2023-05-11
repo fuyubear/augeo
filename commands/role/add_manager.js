@@ -1,5 +1,8 @@
 const { keyv } = require('../../index');
 
+const { parentLogger } = require('../../logger');
+const logger = parentLogger.child({ module: 'commands-role_add-manager' });
+
 module.exports.execute = async function(interaction) {
     // add manager user to role
     let roleManagers;
@@ -14,7 +17,9 @@ module.exports.execute = async function(interaction) {
             .then(ret => roleManagers = ret);
     }
 
-    roleManagers.users.push(interaction.options.getMember('manager').id);
+    if (!roleManagers.users.includes(interaction.options.getMember('manager').id)) {
+        roleManagers.users.push(interaction.options.getMember('manager').id);
+    }
 
     await keyv.set(`role/${interaction.guildId}/${interaction.options.getRole('role').id}/manager`, roleManagers);
 
@@ -22,12 +27,15 @@ module.exports.execute = async function(interaction) {
         .then(ret => roleManagers = ret);
 
     if (roleManagers.users.includes(interaction.options.getMember('manager').id)) {
-        await interaction.editReply(`Successfully added manager user ${interaction.options.getMember('manager').toString()} to ${interaction.options.getRole('role').name}`)
-            .catch(console.error);
+        const msg = `Successfully added manager user ${interaction.options.getMember('manager').toString()} to ${interaction.options.getRole('role').toString()}`;
+        // PRIVACY: logger.info(msg);
+        await interaction.editReply(msg).catch(err => logger.error(err));
     }
     else {
-        await interaction.editReply(`DB error: Could not manager user ${interaction.options.getMember('manager').toString()} to ${interaction.options.getRole('role').name}`)
-            .catch(console.error);
+        const msg = `DB error: Could not add manager user ${interaction.options.getMember('manager').toString()} to ${interaction.options.getRole('role').toString()}`;
+        // PRIVACY: logger.error(msg);
+        logger.error('DB error: Could not add manager user to role');
+        await interaction.editReply(msg).catch(err => logger.error(err));
     }
 
     return;

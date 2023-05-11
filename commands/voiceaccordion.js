@@ -2,6 +2,9 @@ const { SlashCommandBuilder } = require('@discordjs/builders');
 const { ChannelType } = require('discord.js');
 const { keyv } = require('../index');
 
+const { parentLogger } = require('../logger');
+const logger = parentLogger.child({ module: 'commands-voiceaccordion' });
+
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('voiceaccordion')
@@ -17,44 +20,60 @@ module.exports = {
                 .setDescription('Unique name of the '
                 + 'base voice channel to create for this accordion.')
                 .setRequired(false))
-        .addBooleanOption(option =>
-            option.setName('base_is_afk')
-                .setDescription('Is the base channel the AFK channel?')
-                .setRequired(false))
         .addStringOption(option =>
             option.setName('expand_ch_names')
-                .setDescription('Comma-separated list of '
+                .setDescription('Delimiter (default: comma) separated list of '
                 + 'unique names of this accordion\'s expansion channels.')
                 .setRequired(false))
         .addStringOption(option =>
-            option.setName('ignore_ch_names')
+            option.setName('expand_ch_names_delimiter')
+                .setDescription('Delimiter to separate channel names '
+                + 'in expand_ch_names.')
+                .setRequired(false))
+        .addBooleanOption(option =>
+            option.setName('is_cycle')
+                .setDescription('Are channel names pulled from the front of the expand_ch list?')
+                .setRequired(false))
+        .addBooleanOption(option =>
+            option.setName('is_v2')
+                .setDescription('Track expand channels by ID?')
+                .setRequired(false))
+        .addStringOption(option =>
+            option.setName('extra_ch_names')
                 .setDescription('Comma-separated list of '
-                + 'unique names of channels in the category but not a part of this accordion.')
+                + 'names of non-base, non-expand voice channels created in this category.')
                 .setRequired(false)),
     async execute(interaction) {
         await interaction.deferReply();
 
-        let enabled;
+        let accordionSettings;
         const VOICE_ACCORDION_KEY_URL = `voice-accordion/${interaction.guildId}/settings`;
         await keyv.get(VOICE_ACCORDION_KEY_URL)
-            .then(ret => enabled = ret);
-        if (!enabled || !enabled.flag) {
+            .then(ret => accordionSettings = ret);
+        if (!accordionSettings || !accordionSettings.enabled) {
             const voiceAccordionCategory = interaction.options.getChannel('category_channel');
             const voiceAccordionBase = interaction.options.getString('base_ch_name');
-            let voiceAccordionExpand = interaction.options.getString('expand_ch_names');
-            let voiceAccordionIgnore = interaction.options.getString('ignore_ch_names');
-            const voiceAccordionBaseIsAfk = interaction.options.getBoolean('base_is_afk');
+            let dynamicVoiceChannelNames = interaction.options.getString('expand_ch_names');
+            let delimiter = interaction.options.getString('expand_ch_names_delimiter');
+            let voiceAccordionIgnore = interaction.options.getString('extra_ch_names');
+            const voiceAccordionIsCycle = interaction.options.getBoolean('is_cycle');
+            const voiceAccordionIsVersion2 = interaction.options.getBoolean('is_v2');
 
-            if (!voiceAccordionBase || !voiceAccordionCategory || !voiceAccordionExpand
-                || voiceAccordionBaseIsAfk === null) {
+            if (!voiceAccordionBase || !voiceAccordionCategory || !dynamicVoiceChannelNames) {
                 await interaction.editReply('Voice accordion is currently disabled. '
-                + 'Please provide category channel, base, and expand channel names, '
-                + 'and whether the base channel is the AFK channel or not, to enable it.')
-                    .catch(console.error);
+                + 'Please provide a category channel, a base channel name, and (an) expand channel name(s) to enable it.')
+                    .catch(err => logger.error(err));
                 return;
             }
 
-            voiceAccordionExpand = voiceAccordionExpand.split(',');
+            if (!delimiter) {
+                delimiter = ',';
+            }
+            dynamicVoiceChannelNames = dynamicVoiceChannelNames.split(delimiter);
+            if (!voiceAccordionIsVersion2) {
+                dynamicVoiceChannelNames = dynamicVoiceChannelNames.reverse();
+            }
+            const voiceAccordionExpandSize = dynamicVoiceChannelNames.length;
 
             if (voiceAccordionIgnore) {
                 voiceAccordionIgnore = voiceAccordionIgnore.split(',');
@@ -63,19 +82,33 @@ module.exports = {
                 voiceAccordionIgnore = [];
             }
 
-            await keyv.set(VOICE_ACCORDION_KEY_URL, {
-                flag: true,
+            accordionSettings = {
+                enabled: true,
+                guildId: interaction.guildId,
+                v2: voiceAccordionIsVersion2,
                 category: voiceAccordionCategory,
                 base: voiceAccordionBase,
-                expand: voiceAccordionExpand,
-                expandList: voiceAccordionExpand,
-                expandSize: voiceAccordionExpand.length,
-                ignore: voiceAccordionIgnore,
-                baseIsAfk: voiceAccordionBaseIsAfk,
-            });
+                expandSize: voiceAccordionExpandSize,
+                cycle: voiceAccordionIsCycle,
+                cycleIdx: 0,
+            };
+
+            if (voiceAccordionIsVersion2) {
+                // accordionSettings.expand = {channelName = channel_id};
+                // ^ where channel_id is either 0 (non-existent) or has a valid channel ID
+                accordionSettings.expand = {};
+                for (const dynamicVoiceChannelName of dynamicVoiceChannelNames) {
+                    accordionSettings.expand[dynamicVoiceChannelName] = 0;
+                }
+            }
+            else {
+                accordionSettings.expand = dynamicVoiceChannelNames;
+            }
+
+            await keyv.set(VOICE_ACCORDION_KEY_URL, accordionSettings);
             await keyv.get(VOICE_ACCORDION_KEY_URL)
-                .then(ret => enabled = ret);
-            if (enabled.flag) {
+                .then(ret => accordionSettings = ret);
+            if (accordionSettings.enabled) {
                 let categoryCh;
                 await interaction.guild.channels.fetch(voiceAccordionCategory.id)
                     .then(ret => categoryCh = ret);
@@ -87,7 +120,7 @@ module.exports = {
                     name: newVoiceChannelName,
                     type: ChannelType.GuildVoice,
                     bitrate: interaction.guild.maximumBitrate,
-                }).catch(console.error);
+                }).catch(err => logger.error(err));
 
                 if (voiceAccordionIgnore) {
                     for (let i = 0; i < voiceAccordionIgnore.length; i++) {
@@ -97,35 +130,39 @@ module.exports = {
                             name: newVoiceChannelName,
                             type: ChannelType.GuildVoice,
                             bitrate: interaction.guild.maximumBitrate,
-                        }).catch(console.error);
+                        }).catch(err => logger.error(err));
                     }
                 }
 
+                logger.info(`Voice accordion is enabled for guild ${interaction.guildId}`);
+
                 await interaction.editReply('Voice accordion is enabled. '
-                + '**Do not delete any channels. '
+                + '**Do not delete any base channels. '
                 + 'Otherwise you will need to disable, then reenable the voice accordion '
                 + 'for it to work well again.** If needed, edit appropriate permissions '
                 + 'for ignored channels.')
-                    .catch(console.error);
+                    .catch(err => logger.error(err));
                 return;
             }
         }
-        else if (enabled.flag) {
+        else if (accordionSettings.enabled) {
             await keyv.set(VOICE_ACCORDION_KEY_URL, {
-                flag: false,
+                enabled: false,
             });
             await keyv.get(VOICE_ACCORDION_KEY_URL)
-                .then(ret => enabled = ret);
-            if (!enabled.flag) {
+                .then(ret => accordionSettings = ret);
+            if (!accordionSettings.enabled) {
+                logger.info(`Voice accordion is disabled for guild ${interaction.guildId}`);
                 await interaction.editReply('Voice accordion is disabled. All settings '
                 + 'are cleared. When reenabling, make sure the chosen category is empty.')
-                    .catch(console.error);
+                    .catch(err => logger.error(err));
                 return;
             }
         }
 
+        logger.error(`DB error: Failed to toggle voice accordion setting for guild ${interaction.guildId}`);
         await interaction.editReply('DB error: Failed to toggle voice accordion setting.')
-            .catch(console.error);
+            .catch(err => logger.error(err));
 
         return;
     },

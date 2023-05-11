@@ -1,11 +1,13 @@
 const { SlashCommandBuilder } = require('@discordjs/builders');
 const { keyv } = require('../index');
 
+const { parentLogger } = require('../logger');
+const logger = parentLogger.child({ module: 'commands-togglevoiceregions' });
+
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('togglevoiceregions')
-        .setDescription('Bot admin(s) only. '
-        + 'Toggle users to change regions without Edit Channels perms.'),
+        .setDescription('Toggle users to change regions without Edit Channels perms.'),
     async execute(interaction) {
         await interaction.deferReply();
 
@@ -21,8 +23,9 @@ module.exports = {
             await keyv.get(THREAD_PERSIST_KEY_URL)
                 .then(ret => enabled = ret);
             if (enabled.flag) {
+                logger.info(`Voice region edit functionality is enabled for guild ${interaction.guildId}`);
                 await interaction.editReply('Voice region edit functionality is enabled.')
-                    .catch(console.error);
+                    .catch(err => logger.error(err));
                 return;
             }
         }
@@ -33,14 +36,16 @@ module.exports = {
             await keyv.get(THREAD_PERSIST_KEY_URL)
                 .then(ret => enabled = ret);
             if (!enabled.flag) {
+                logger.info(`Voice region edit functionality is disabled for guild ${interaction.guildId}`);
                 await interaction.editReply('Voice region edit functionality is disabled.')
-                    .catch(console.error);
+                    .catch(err => logger.error(err));
                 return;
             }
         }
 
-        await interaction.editReply('DB error: Failed to toggle' +
+        logger.error(`DB error: Failed to toggle the voice region edit functionality setting failed for guild ${interaction.guildId}`);
+        await interaction.editReply('DB error: Failed to toggle the' +
         ' voice region functionality setting.')
-            .catch(console.error);
+            .catch(err => logger.error(err));
     },
 };

@@ -1,22 +1,31 @@
 const fs = require('fs');
 const { Client, Collection, GatewayIntentBits } = require('discord.js');
 const { token, redisEnabled, redisUser, redisPass, redisConnection } = require('./config.json');
+const { parentLogger } = require('./logger');
+
+// when an uncaught exception is encountered...
+process.on('uncaughtException', (err) => {
+    // ...log the exception and keep going
+    parentLogger.fatal(err, 'Uncaught exception detected');
+});
 
 const client = new Client({
-    intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildVoiceStates, GatewayIntentBits.GuildMembers],
+    intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMembers, GatewayIntentBits.GuildModeration, GatewayIntentBits.GuildVoiceStates],
 });
 module.exports.client = client;
 
-// ORM
+// ORM + logger
 const Keyv = require('keyv');
+const dbKeyvLogger = parentLogger.child({ module: 'keyv' });
 let keyv;
+// TODO: add support for more storage backends supported by keyv
 if (redisEnabled) {
     keyv = new Keyv(`redis://${redisUser}:${redisPass}@${redisConnection}`);
 }
 else {
     keyv = new Keyv('sqlite://db.sqlite');
 }
-keyv.on('error', err => console.error('Keyv connection error:', err));
+keyv.on('error', err => dbKeyvLogger.error('Keyv connection error:', err));
 module.exports.keyv = keyv;
 
 client.commands = new Collection();

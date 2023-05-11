@@ -1,4 +1,8 @@
 const { SlashCommandBuilder } = require('@discordjs/builders');
+
+const { parentLogger } = require('../logger');
+const logger = parentLogger.child({ module: 'commands-invite' });
+
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('invite')
@@ -26,18 +30,20 @@ module.exports = {
             .then(invite => inviteObj = invite)
             .catch((err) => {
                 inviteSuccess = false;
-                console.error(err);
+                logger.error(err);
             });
 
         if (inviteSuccess === true) {
+            // const msg = `A single-use 7 day server invite ${inviteObj.code} was created by user ${interaction.user.id}. Audit log reason: "${reason}"`;
+            // PRIVACY: logger.info(msg);
             await interaction.editReply('I\'ve successfully created a single-use '
                 + `7 day server invite with invite code: ${inviteObj.code}`)
-                .catch(console.error);
+                .catch(err => logger.error(err));
         }
         else {
-            await interaction.editReply('I\'ve failed to create an invite. '
-                + 'Please make sure I have the permissions to create an invite.')
-                .catch(console.error);
+            const msg = 'I\'ve failed to create an invite. Please make sure I have the permissions to create an invite.';
+            logger.error(msg);
+            await interaction.editReply(msg).catch(err => logger.error(err));
         }
 
         return;

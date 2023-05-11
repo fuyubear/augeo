@@ -1,28 +1,35 @@
+const { roleMention } = require('discord.js');
+
+const { parentLogger } = require('../../logger');
+const logger = parentLogger.child({ module: 'commands-role_rm' });
+
 module.exports = {
     async execute(interaction) {
-        await this.executeThis(interaction, undefined);
+        await this.executeThis(interaction, undefined, interaction.options.getString('reason'));
         return;
     },
-    async executeThis(interaction, plainRoleId) {
+    async executeThis(interaction, plainRoleId, reason) {
         // remove user from role
         let roleId;
-        let roleName;
         if (!plainRoleId) {
             roleId = interaction.options.getRole('role').id;
-            roleName = interaction.options.getRole('role').name;
         }
         else {
             roleId = plainRoleId;
-            let role;
-            await interaction.guild.roles.fetch(plainRoleId).then(ret => role = ret);
-            roleName = role.name;
         }
 
-        await interaction.options.getMember('user').roles.remove(roleId)
-            .catch(console.error);
+        if (reason) {
+            reason = `Executed by user ${interaction.user.id}: ` + reason;
+        }
+        else {
+            reason = `Executed by user ${interaction.user.id}.`;
+        }
 
-        await interaction.editReply(`Successfully removed ${interaction.options.getMember('user').displayName} from ${roleName}`)
-            .catch(console.error);
+        await interaction.options.getMember('user').roles.remove(roleId, reason).catch(err => logger.error(err));
+
+        const msg = `successfully removed ${interaction.options.getMember('user').toString()} from ${roleMention(roleId)}`;
+        // PRIVACY: logger.info(`User ${interaction.user.id} ${msg}`);
+        await interaction.editReply('You ' + msg).catch(err => logger.error(err));
         return;
     },
 };

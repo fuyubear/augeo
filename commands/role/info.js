@@ -1,24 +1,26 @@
 const { keyv } = require('../../index');
+const { userMention, roleMention } = require('discord.js');
+
+const { parentLogger } = require('../../logger');
+const logger = parentLogger.child({ module: 'commands-role_info' });
 
 module.exports.execute = async function(interaction) {
     if (interaction.options.getRole('role').name === '@everyone') {
         await interaction.editReply('The `@everyone` role cannot be viewed.')
-            .catch(console.error);
+            .catch(err => logger.error(err));
         return;
     }
 
     await interaction.guild.members.fetch()
-        .then(console.log)
-        .catch(console.error);
-
-    const guildRoleManager = interaction.guild.roles;
-    const guildMemberManager = interaction.guild.members;
+        // .then(console.log)
+        .catch(err => logger.error(err));
 
     // get role and print the information out
     let roleMembers = [];
-    interaction.options.getRole('role').members.each(value =>
-        roleMembers.push(value.user.tag),
-    );
+    const roleMemberIds = interaction.options.getRole('role').members.keys();
+    for (const id of roleMemberIds) {
+        roleMembers.push(userMention(id));
+    }
     if (roleMembers.length === 0) {
         roleMembers = 'None';
     }
@@ -29,13 +31,13 @@ module.exports.execute = async function(interaction) {
 
     if (!roleManagers) {
         await interaction.editReply(`There are no managers for this role.\nRole members: ${roleMembers}`)
-            .catch(console.error);
+            .catch(err => logger.error(err));
         return;
     }
 
     let managerUsers = [];
     for (const managerUserIdx in roleManagers.users) {
-        managerUsers.push(guildMemberManager.resolve(roleManagers.users[managerUserIdx]).user.tag);
+        managerUsers.push(userMention(roleManagers.users[managerUserIdx]));
     }
     if (managerUsers.length === 0) {
         managerUsers = 'None';
@@ -43,7 +45,7 @@ module.exports.execute = async function(interaction) {
 
     let managerRoles = [];
     for (const managerRoleIdx in roleManagers.roles) {
-        managerRoles.push(guildRoleManager.resolve(roleManagers.roles[managerRoleIdx]).name);
+        managerRoles.push(roleMention(roleManagers.roles[managerRoleIdx]));
     }
     if (managerRoles.length === 0) {
         managerRoles = 'None';
@@ -51,7 +53,6 @@ module.exports.execute = async function(interaction) {
 
     const outputString = `${interaction.options.getRole('role').name}:\nManager users: ${managerUsers}\nManager roles: ${managerRoles}\nRole members: ${roleMembers}`;
 
-    await interaction.editReply(outputString)
-        .catch(console.error);
+    await interaction.editReply(outputString).catch(err => logger.error(err));
     return;
 };

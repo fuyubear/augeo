@@ -1,11 +1,14 @@
 const { keyv } = require('../../index');
 
+const { parentLogger } = require('../../logger');
+const logger = parentLogger.child({ module: 'commands-role_reset-all' });
+
 module.exports.execute = async function(interaction) {
     // remove all managers from all roles in a guild
 
     if (!interaction.options.getString('confirm')) {
         await interaction.editReply('Please provide confirmation to start the resetting process for all roles in this guild.')
-            .catch(console.error);
+            .catch(err => logger.error(err));
     }
     else {
         const roles = [];
@@ -15,8 +18,9 @@ module.exports.execute = async function(interaction) {
         for (const role in roles) {
             await keyv.set(`role/${interaction.guildId}/${roles[role].id}/manager`, undefined);
         }
-        await interaction.editReply('Cleared all managers from all roles in this guild.')
-            .catch(console.error);
+        const msg = 'Cleared all managers from all roles in ';
+        logger.info(msg + `guild ${interaction.guildId}`);
+        await interaction.editReply(msg + 'this guild.').catch(err => logger.error(err));
     }
 
     return;

@@ -1,6 +1,9 @@
 const { keyv } = require('../index');
 const { AuditLogEvent } = require('discord.js');
 
+const { parentLogger } = require('../logger');
+const logger = parentLogger.child({ module: 'events-threadUpdate' });
+
 module.exports = {
     name: 'threadUpdate',
     async execute(oldThread, newThread) {
@@ -35,7 +38,7 @@ module.exports = {
                 }
             }
 
-            await newThread.setArchived(false).catch(console.error);
+            await newThread.setArchived(false).catch(err => logger.error(err));
         }
 
         return;

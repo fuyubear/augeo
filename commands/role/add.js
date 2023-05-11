@@ -1,28 +1,35 @@
+const { roleMention } = require('discord.js');
+
+const { parentLogger } = require('../../logger');
+const logger = parentLogger.child({ module: 'commands-role_add' });
+
 module.exports = {
     async execute(interaction) {
-        await this.executeThis(interaction, undefined);
+        await this.executeThis(interaction, undefined, interaction.options.getString('reason'));
         return;
     },
-    async executeThis(interaction, plainRoleId) {
+    async executeThis(interaction, plainRoleId, reason) {
         // add user to role
         let roleId;
-        let roleName;
         if (!plainRoleId) {
             roleId = interaction.options.getRole('role').id;
-            roleName = interaction.options.getRole('role').name;
         }
         else {
             roleId = plainRoleId;
-            let role;
-            await interaction.guild.roles.fetch(plainRoleId).then(ret => role = ret);
-            roleName = role.name;
         }
 
-        await interaction.options.getMember('user').roles.add(roleId)
-            .catch(console.error);
+        if (reason) {
+            reason = `Executed by user ${interaction.user.id}: ` + reason;
+        }
+        else {
+            reason = `Executed by user ${interaction.user.id}.`;
+        }
 
-        await interaction.editReply(`Successfully added ${interaction.options.getMember('user').displayName} to ${roleName}`)
-            .catch(console.error);
+        await interaction.options.getMember('user').roles.add(roleId, reason).catch(err => logger.error(err));
+
+        const msg = `successfully added ${interaction.options.getMember('user').toString()} to ${roleMention(roleId)}`;
+        // PRIVACY: logger.info(`User ${interaction.user.id} ${msg}`);
+        await interaction.editReply('You ' + msg).catch(err => logger.error(err));
         return;
     },
 };
