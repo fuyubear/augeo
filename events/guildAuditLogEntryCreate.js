@@ -18,7 +18,7 @@ module.exports = {
 
         logger.info(instanceLogPrefix + ' Starting DVC processing.');
 
-        const lockFileName = 'dvc-lock-' + guild.id;
+        const lockFileName = 'lock-dvc-' + guild.id;
 
         // only 1 event should be processed at any time for DVC
         let acquiredLock = false;
