@@ -58,7 +58,7 @@ module.exports = {
                 )
                 .addRoleOption(option =>
                     option.setName('role')
-                        .setDescription('Role to add manager to (must have Manage Roles permission applicable to this role).')
+                        .setDescription('Role to add manager to (must have the Manage Roles permission for this role).')
                         .setRequired(true),
                 ))
         .addSubcommand(subcommand =>
@@ -71,7 +71,7 @@ module.exports = {
                 )
                 .addRoleOption(option =>
                     option.setName('role')
-                        .setDescription('Role to remove manager from (must have Manage Roles permission applicable to this role).')
+                        .setDescription('Role to remove manager from (must have the Manage Roles permission for this role).')
                         .setRequired(true),
                 ))
         .addSubcommand(subcommand =>
@@ -84,7 +84,7 @@ module.exports = {
                 )
                 .addRoleOption(option =>
                     option.setName('role')
-                        .setDescription('Role to add manager role to (must have Manage Roles permission applicable to this role).')
+                        .setDescription('Role to add manager role to (must have the Manage Roles permission for this role).')
                         .setRequired(true),
                 ))
         .addSubcommand(subcommand =>
@@ -97,7 +97,7 @@ module.exports = {
                 )
                 .addRoleOption(option =>
                     option.setName('role')
-                        .setDescription('Role to remove manager role from (must have Manage Roles permission applicable to this role).')
+                        .setDescription('Role to remove manager role from (must have the Manage Roles permission for this role).')
                         .setRequired(true),
                 ))
         .addSubcommand(subcommand =>
@@ -110,23 +110,23 @@ module.exports = {
                 ))
         .addSubcommand(subcommand =>
             subcommand.setName('view_all_managers')
-                .setDescription('List all managers for all roles. Only executable by the Guild/Server Owner.')
+                .setDescription('List all role managers. Only executable by the Guild/Server Owner and Bot Admins.')
                 .addStringOption(option =>
                     option.setName('confirm')
                         .setDescription('WARNING: All manager user/roles will be pinged (unsanitized output)! Continue?')
-                        .setRequired(true),
+                        .setRequired(false),
                 ))
         .addSubcommand(subcommand =>
             subcommand.setName('reset')
                 .setDescription('Remove all managers from a role.')
                 .addRoleOption(option =>
                     option.setName('role')
-                        .setDescription('Role to remove all managers from (must have Manage Roles permission applicable to this role).')
+                        .setDescription('Role to remove all managers from (must have the Manage Roles permission for this role).')
                         .setRequired(true),
                 ))
         .addSubcommand(subcommand =>
             subcommand.setName('reset_all')
-                .setDescription('Remove all managers from all roles. Only executable by the Guild/Server Owner.')
+                .setDescription('Remove all role managers. Only executable by the Guild/Server Owner and Bot Admins.')
                 .addStringOption(option =>
                     option.setName('confirm')
                         .setDescription('Confirmation of this action.')

@@ -5,6 +5,11 @@ const { parentLogger } = require('../../logger');
 const logger = parentLogger.child({ module: 'commands-role_view-all-managers' });
 
 module.exports.execute = async function(interaction) {
+    if (!interaction.options.getString('confirm')) {
+        await interaction.editReply('Please provide confirmation to run this command.')
+            .catch(err => logger.error(err));
+    }
+
     await interaction.editReply('Here are all of the managers for every role in this guild.')
         .catch(err => logger.error(err));
 

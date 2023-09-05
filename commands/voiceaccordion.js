@@ -8,8 +8,7 @@ const logger = parentLogger.child({ module: 'commands-voiceaccordion' });
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('voiceaccordion')
-        .setDescription('Bot admin(s) only. '
-        + 'Toggle the voice accordion feature.')
+        .setDescription('Toggle the voice accordion feature.')
         .addChannelOption(option =>
             option.setName('category_channel')
                 .setDescription('Pick an empty category channel where the voice accordion will exist.')
