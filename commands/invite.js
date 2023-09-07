@@ -35,7 +35,6 @@ module.exports = {
                 useLimit: 0,
                 useExpiration: 0,
             };
-            return;
         }
 
         const instanceLogPrefix = 'Invite Run ID [' + interaction.guildId + '-' + interaction.member.id + '-' + timestamp + ']';
