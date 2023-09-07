@@ -27,8 +27,14 @@ module.exports = {
             .catch(err => logger.error(err));
 
         if (!userInviteGuildSettings) {
-            await interaction.editReply('The config_invite slash command must be run before this command can be used. Contact your bot admin to fix this.')
-                .catch(err => logger.error(err));
+            // await interaction.editReply('The config_invite slash command must be run before this command can be used. Contact your bot admin to fix this.')
+            //     .catch(err => logger.error(err));
+            userInviteGuildSettings = {
+                expireAfter: 604800,
+                requireReason: false,
+                useLimit: 0,
+                useExpiration: 0,
+            };
             return;
         }
 
@@ -60,7 +66,7 @@ module.exports = {
 
         // Update user state
         for (let i = 0; i < userInviteUserState.uses.length; i++) {
-            if (userInviteUserState.uses[i] + userInviteGuildSettings.regenerateTime <= timestamp) {
+            if (userInviteUserState.uses[i] + userInviteGuildSettings.useExpiration <= timestamp) {
                 userInviteUserState.uses.splice(i, 1);
                 i--;
             }
@@ -69,7 +75,7 @@ module.exports = {
 
         // Make sure invites are available for use.
         if (userInviteGuildSettings.useLimit > 0 && userInviteUserState.uses.length >= userInviteGuildSettings.useLimit) {
-            const secondsUntilNextUse = userInviteUserState.uses[0] + userInviteGuildSettings.regenerateTime - timestamp;
+            const secondsUntilNextUse = userInviteUserState.uses[0] + userInviteGuildSettings.useExpiration - timestamp;
             await interaction.editReply('You have used your entire invite creation allotment. You must wait '
                 + secondsUntilNextUse + ' seconds before you can create another invite or ask someone else to create one for you.')
                 .catch(err => logger.error(err));

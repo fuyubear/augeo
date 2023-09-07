@@ -2,7 +2,7 @@ const { SlashCommandBuilder } = require('@discordjs/builders');
 const { unlink } = require('fs').promises;
 
 const { parentLogger } = require('../logger');
-const logger = parentLogger.child({ module: 'commands-config_invite' });
+const logger = parentLogger.child({ module: 'commands-release_resource_lock' });
 
 module.exports = {
     data: new SlashCommandBuilder()

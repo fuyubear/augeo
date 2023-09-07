@@ -41,6 +41,11 @@ module.exports = {
             option.setName('extra_ch_names')
                 .setDescription('Comma-separated list of '
                 + 'names of non-base, non-expand voice channels created in this category.')
+                .setRequired(false))
+        .addIntegerOption(option =>
+            option.setName('available_ch_limit')
+                .setDescription('Number of voice accordion channels '
+                + 'that can be available at any given time.')
                 .setRequired(false)),
     async execute(interaction) {
         await interaction.deferReply();
@@ -57,6 +62,7 @@ module.exports = {
             let voiceAccordionIgnore = interaction.options.getString('extra_ch_names');
             const voiceAccordionIsCycle = interaction.options.getBoolean('is_cycle');
             const voiceAccordionIsVersion2 = interaction.options.getBoolean('is_v2');
+            const voiceAccordionAvailChLimit = interaction.options.getBoolean('available_ch_limit');
 
             if (!voiceAccordionBase || !voiceAccordionCategory || !dynamicVoiceChannelNames) {
                 await interaction.editReply('Voice accordion is currently disabled. '
@@ -90,6 +96,7 @@ module.exports = {
                 expandSize: voiceAccordionExpandSize,
                 cycle: voiceAccordionIsCycle,
                 cycleIdx: 0,
+                availableChLimit: voiceAccordionAvailChLimit,
             };
 
             if (voiceAccordionIsVersion2) {

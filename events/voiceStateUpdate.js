@@ -121,11 +121,9 @@ module.exports = {
             await setSettings(oldState.guild.id, accordionSettings);
         }
 
-        // check if any accordion channels are empty and if the maximum accordion limit is filled.
-        // then create another voice channel in the accordion if these conditions are met.
-
-        // alternatively if all expand channels have at least 1 person when base ch is AFK, then generate
-        // another expand channel.
+        // Check if any accordion channels are empty and if the maximum accordion limit is filled,
+        // then create another voice channel in the accordion if there's remaining expand channels
+        // to create, as long as the currently shown expand channel count is below the limit (if set).
         if (newState.channel
             && ((newState.guild.channels.cache.filter(
                 (channel) =>
@@ -136,13 +134,21 @@ module.exports = {
                         && isAccordionBaseOrExpandChannel(channel, accordionSettings),
             ).size === 0
             ))
-            && newState.guild.channels.cache.filter(
+            && ((!accordionSettings.availableChLimit && (newState.guild.channels.cache.filter(
                 (channel) =>
                     channel.type === ChannelType.GuildVoice
                     && channel.parentId === voiceAccordionCategoryId
                     && isAccordionBaseOrExpandChannel(channel, accordionSettings),
             ).size < (accordionSettings.base.length
-                + accordionSettings.expandSize)
+                + accordionSettings.expandSize)))
+                || (accordionSettings.availableChLimit && (newState.guild.channels.cache.filter(
+                    (channel) =>
+                        channel.type === ChannelType.GuildVoice
+                        && channel.parentId === voiceAccordionCategoryId
+                        && isAccordionBaseOrExpandChannel(channel, accordionSettings),
+                ).size < (accordionSettings.availableChLimit)))
+            )
+
         ) {
             if (newState.channel.parentId === voiceAccordionCategoryId
                 && newState.channel.type === ChannelType.GuildVoice) {
