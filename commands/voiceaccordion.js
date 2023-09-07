@@ -62,7 +62,7 @@ module.exports = {
             let voiceAccordionIgnore = interaction.options.getString('extra_ch_names');
             const voiceAccordionIsCycle = interaction.options.getBoolean('is_cycle');
             const voiceAccordionIsVersion2 = interaction.options.getBoolean('is_v2');
-            const voiceAccordionAvailChLimit = interaction.options.getBoolean('available_ch_limit');
+            const voiceAccordionAvailChLimit = interaction.options.getInteger('available_ch_limit');
 
             if (!voiceAccordionBase || !voiceAccordionCategory || !dynamicVoiceChannelNames) {
                 await interaction.editReply('Voice accordion is currently disabled. '
