@@ -113,7 +113,7 @@ module.exports = {
             // const msg = `A single-use 7 day server invite ${inviteObj.code} was created by user ${interaction.user.id}. Audit log reason: "${reason}"`;
             // PRIVACY: logger.info(msg);
             await interaction.editReply('I\'ve successfully created a single-use '
-                + `server invite with invite code: ${inviteObj.code}. This code expires in ${userInviteGuildSettings.expireAfter} seconds.`)
+                + `server invite with invite code: \`${inviteObj.code}\`. This code expires in ${userInviteGuildSettings.expireAfter} seconds.`)
                 .catch(err => logger.error(err));
 
             // Count the invite use and then save it.
