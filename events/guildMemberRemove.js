@@ -12,7 +12,7 @@ module.exports = {
             return;
         }
 
-        const msg = `${userMention(member.id)} (${member.guild.id}) has left the server.`;
+        const msg = `${userMention(member.id)} (${member.id}) has left the server.`;
         logger.info(msg);
         await member.guild.systemChannel.send(msg).catch(err => logger.error(err));
         return;
