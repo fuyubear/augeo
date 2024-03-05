@@ -102,16 +102,17 @@ async function getNewAccordionExpandChName(accordionSettings) {
 async function putBackAccordionExpandCh(
     channelId,
     accordionSettings,
-    instanceLogPrefix,
-    logger
+    logger,
+    instanceLogPrefix
 ) {
     for (const expandChName in accordionSettings.expand) {
         if (accordionSettings.expand[expandChName] === channelId) {
             accordionSettings.expand[expandChName] = 0;
             await saveSettings(accordionSettings);
-            logger.info(
-                instanceLogPrefix +
-                    " Removed voice channel " +
+            logInfo(
+                logger,
+                instanceLogPrefix,
+                "Removed voice channel " +
                     expandChName +
                     " (ID:" +
                     channelId +
@@ -121,27 +122,41 @@ async function putBackAccordionExpandCh(
     }
 }
 
-async function getGuildLock(
-    lockFileName,
-    instanceLogPrefix,
-    logger,
-    timeout = 300
-) {
-    const instanceLogPrefix =
-        "DVC Run ID [" + oldState.guild.id + "-" + Date.now() + "]";
+async function getGuildLock(guild, logger, timeout = 300) {
+    const instanceLogPrefix = getInstanceLogPrefix(guild);
     logger.info(instanceLogPrefix + " Starting DVC processing.");
-    const lockFileName = "lock-dvc-" + oldState.guild.id;
+    const lockFileName = getLockName(guild);
 
     // only 1 event should be processed at any time for DVC
     await getLock(lockFileName, instanceLogPrefix, logger, timeout)
         .then((val) => (acquiredLock = val))
         .catch((err) => logger.error(err));
-    return acquiredLock;
+    if (acquiredLock) {
+        return instanceLogPrefix;
+    }
+    return null;
 }
 
-async function releaseGuildLock(lockFileName, instanceLogPrefix, logger) {
+async function releaseGuildLock(guild, logger, instanceLogPrefix) {
+    const lockFileName = getLockName(guild);
     await releaseLock(lockFileName, instanceLogPrefix, logger);
     logger.info(instanceLogPrefix + " Ending DVC processing.");
+}
+
+async function logError(logger, instanceLogPrefix, message) {
+    logger.error(instanceLogPrefix + message);
+}
+
+async function logInfo(logger, instanceLogPrefix, message) {
+    logger.info(instanceLogPrefix + message);
+}
+
+function getInstanceLogPrefix(guild) {
+    return "DVC Run ID [" + guild.id + "-" + Date.now() + "] ";
+}
+
+function getLockName(guild) {
+    return "lock-dvc-" + guild.id;
 }
 
 export {
@@ -156,4 +171,7 @@ export {
     getAccordionSettings,
     getGuildLock,
     releaseGuildLock,
+    logError,
+    logInfo,
+    getInstanceLogPrefix,
 };

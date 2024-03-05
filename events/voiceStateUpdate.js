@@ -10,6 +10,7 @@ const {
     getAccordionSettings,
     getGuildLock,
     releaseGuildLock,
+    getInstanceLogPrefix,
 } = require("../utils/voiceAccordionHelper");
 
 const { parentLogger } = require("../logger");
@@ -25,10 +26,15 @@ module.exports = {
         }
 
         // only 1 event should be processed at any time for DVC
-        await getGuildLock(lockFileName, instanceLogPrefix, logger)
+        await getGuildLock(oldState.guild, logger)
             .then((val) => (acquiredLock = val))
             .catch((err) => logger.error(err));
         if (!acquiredLock) {
+            await logError(
+                logger,
+                getInstanceLogPrefix(oldState.guild),
+                "Could not obtain lock for DVC."
+            );
             return;
         }
 
@@ -37,8 +43,7 @@ module.exports = {
             newState
         );
         if (!accordionSettings || !accordionSettings.enabled) {
-            logger.error(instanceLogPrefix + " DVC is not enabled.");
-            await releaseGuildLock(lockFileName, instanceLogPrefix, logger);
+            await releaseGuildLock(oldState.guild, logger, acquiredLock);
             return;
         }
 
@@ -111,8 +116,8 @@ module.exports = {
                         putBackAccordionExpandCh(
                             oldChannelId,
                             accordionSettings,
-                            instanceLogPrefix,
-                            logger
+                            logger,
+                            acquiredLock
                         )
                     )
                     .catch((err) => logger.error(err));
@@ -170,14 +175,15 @@ module.exports = {
                     .catch((err) => logger.error(err));
 
                 if (!newVoiceChannelName) {
-                    logger.error(
-                        instanceLogPrefix +
-                            " Could not obtain a new name for a newly created voice channel."
+                    await logError(
+                        oldState.guild,
+                        logger,
+                        "Could not obtain a new name for a newly created voice channel."
                     );
                     await releaseGuildLock(
-                        lockFileName,
-                        instanceLogPrefix,
-                        logger
+                        oldState.guild,
+                        logger,
+                        acquiredLock
                     );
                     return;
                 }
@@ -199,10 +205,10 @@ module.exports = {
                     .catch((err) => logger.error(err));
 
                 accordionSettings.expand[newVoiceChannelName] = newChannel.id;
-                logger.info(
-                    instanceLogPrefix +
-                        " Created voice channel " +
-                        newVoiceChannelName
+                await logInfo(
+                    oldState.guild,
+                    logger,
+                    "Created voice channel " + newVoiceChannelName
                 );
                 await saveVoiceAccordionStateByGuild(
                     newState.guild.id,
@@ -211,7 +217,7 @@ module.exports = {
             }
         }
 
-        await releaseGuildLock(lockFileName, instanceLogPrefix, logger);
+        await releaseGuildLock(oldState.guild, logger, acquiredLock);
         return;
     },
 };

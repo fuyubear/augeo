@@ -6,6 +6,7 @@ const {
     getAccordionSettingsByGuild,
     getGuildLock,
     releaseGuildLock,
+    getInstanceLogPrefix,
 } = require("../utils/voiceAccordionHelper");
 
 const { parentLogger } = require("../logger");
@@ -24,16 +25,21 @@ module.exports = {
         }
 
         // only 1 event should be processed at any time for DVC
-        await getGuildLock(lockFileName, instanceLogPrefix, logger)
+        await getGuildLock(guild, logger)
             .then((val) => (acquiredLock = val))
             .catch((err) => logger.error(err));
         if (!acquiredLock) {
+            await logError(
+                logger,
+                getInstanceLogPrefix(guild),
+                "Could not obtain lock for DVC."
+            );
             return;
         }
 
         const accordionSettings = await getAccordionSettingsByGuild(guild.id);
         if (!accordionSettings || !accordionSettings.enabled) {
-            await releaseGuildLock(lockFileName, instanceLogPrefix, logger);
+            await releaseGuildLock(guild, logger, acquiredLock);
             return;
         }
 
@@ -43,12 +49,12 @@ module.exports = {
             await putBackAccordionExpandCh(
                 auditLogEntry.targetId,
                 accordionSettings,
-                instanceLogPrefix,
-                logger
+                logger,
+                acquiredLock
             );
         }
 
-        await releaseGuildLock(lockFileName, instanceLogPrefix, logger);
+        await releaseGuildLock(guild, logger, acquiredLock);
         return;
     },
 };
