@@ -40,4 +40,4 @@ async function releaseLock(lockName, instanceLogPrefix, logger) {
     await unlink(lockName).catch((err) => logger.error(err));
 }
 
-export { getLock, releaseLock };
+module.exports = { getLock, releaseLock };

@@ -159,7 +159,7 @@ function getLockName(guild) {
     return "lock-dvc-" + guild.id;
 }
 
-export {
+module.exports = {
     getNewAccordionExpandChName,
     putBackAccordionExpandCh,
     isAccordionExpandChannel,
