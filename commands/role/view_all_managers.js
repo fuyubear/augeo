@@ -1,45 +1,51 @@
-const { keyv } = require('../../index');
-const { userMention, roleMention } = require('discord.js');
+const { keyv } = require("../../index");
+const { userMention, roleMention } = require("discord.js");
 
-const { parentLogger } = require('../../logger');
-const logger = parentLogger.child({ module: 'commands-role_view-all-managers' });
+const { parentLogger } = require("../../logger");
+const logger = parentLogger.child({
+    module: "commands-role_view-all-managers",
+});
 
-module.exports.execute = async function(interaction) {
-    if (!interaction.options.getString('confirm')) {
-        await interaction.editReply('Please provide confirmation to run this command.')
-            .catch(err => logger.error(err));
+module.exports.execute = async function (interaction) {
+    if (!interaction.options.getString("confirm")) {
+        await interaction
+            .editReply("Please provide confirmation to run this command.")
+            .catch((err) => logger.error(err));
     }
 
-    await interaction.editReply('Here are all of the managers for every role in this guild.')
-        .catch(err => logger.error(err));
+    await interaction
+        .editReply("Here are all of the managers for every role in this guild.")
+        .catch((err) => logger.error(err));
 
-    let messageContent = '';
+    let messageContent = "";
 
-    await interaction.guild.members.fetch()
+    await interaction.guild.members
+        .fetch()
         // .then(console.log)
-        .catch(err => logger.error(err));
+        .catch((err) => logger.error(err));
 
-    await interaction.guild.roles.fetch()
+    await interaction.guild.roles
+        .fetch()
         // .then(console.log)
-        .catch(err => logger.error(err));
+        .catch((err) => logger.error(err));
 
     const roles = [];
-    interaction.guild.roles.cache.each(value =>
-        roles.push(value),
-    );
+    interaction.guild.roles.cache.each((value) => roles.push(value));
 
     for (const roleIdx in roles) {
-        if (roles[roleIdx].name === '@everyone' || roles[roleIdx].managed) {
+        if (roles[roleIdx].name === "@everyone" || roles[roleIdx].managed) {
             continue;
         }
 
         let roleManagers;
-        await keyv.get(`role/${interaction.guildId}/${roles[roleIdx].id}/manager`)
-            .then(ret => roleManagers = ret);
+        await keyv
+            .get(`role/${interaction.guildId}/${roles[roleIdx].id}/manager`)
+            .then((ret) => (roleManagers = ret));
 
         if (!roleManagers) {
-            await interaction.followUp(`${roles[roleIdx].name}: no managers`)
-                .catch(err => logger.error(err));
+            await interaction
+                .followUp(`${roles[roleIdx].name}: no managers`)
+                .catch((err) => logger.error(err));
             continue;
         }
 
@@ -48,7 +54,7 @@ module.exports.execute = async function(interaction) {
             managerUsers.push(userMention(roleManagers.users[managerUserIdx]));
         }
         if (managerUsers.length === 0) {
-            managerUsers = 'None';
+            managerUsers = "None";
         }
 
         let managerRoles = [];
@@ -56,16 +62,18 @@ module.exports.execute = async function(interaction) {
             managerRoles.push(roleMention(roleManagers.roles[managerRoleIdx]));
         }
         if (managerRoles.length === 0) {
-            managerRoles = 'None';
+            managerRoles = "None";
         }
 
         messageContent = `${roles[roleIdx].name}:\nManager users: ${managerUsers}\nManager roles: ${managerRoles}`;
-        await interaction.followUp(messageContent)
-            .catch(err => logger.error(err));
+        await interaction
+            .followUp(messageContent)
+            .catch((err) => logger.error(err));
     }
 
-    await interaction.followUp('I\'ve reached the end of the role list!')
-        .catch(err => logger.error(err));
+    await interaction
+        .followUp("I've reached the end of the role list!")
+        .catch((err) => logger.error(err));
 
     return;
 };

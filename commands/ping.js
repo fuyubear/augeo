@@ -1,13 +1,13 @@
-const { SlashCommandBuilder } = require('@discordjs/builders');
+const { SlashCommandBuilder } = require("@discordjs/builders");
 
-const { parentLogger } = require('../logger');
-const logger = parentLogger.child({ module: 'commands-ping' });
+const { parentLogger } = require("../logger");
+const logger = parentLogger.child({ module: "commands-ping" });
 
 module.exports = {
     data: new SlashCommandBuilder()
-        .setName('ping')
-        .setDescription('Replies with Pong!'),
+        .setName("ping")
+        .setDescription("Replies with Pong!"),
     async execute(interaction) {
-        return interaction.reply('Pong!').catch(err => logger.error(err));
+        return interaction.reply("Pong!").catch((err) => logger.error(err));
     },
 };

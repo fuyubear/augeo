@@ -1,23 +1,24 @@
-const { InteractionType } = require('discord.js');
+const { InteractionType } = require("discord.js");
 
-const { parentLogger } = require('../logger');
-const logger = parentLogger.child({ module: 'events-interactionCreate' });
+const { parentLogger } = require("../logger");
+const logger = parentLogger.child({ module: "events-interactionCreate" });
 
 module.exports = {
-    name: 'interactionCreate',
+    name: "interactionCreate",
     async execute(interaction) {
         const client = interaction.client;
-        if (interaction.type !== InteractionType.ApplicationCommand
-            && !interaction.isSelectMenu()
-            && !interaction.isButton()) {
+        if (
+            interaction.type !== InteractionType.ApplicationCommand &&
+            !interaction.isSelectMenu() &&
+            !interaction.isButton()
+        ) {
             return;
         }
 
         let command;
         if (interaction.type === InteractionType.ApplicationCommand) {
             command = client.commands.get(interaction.commandName);
-        }
-        else {
+        } else {
             return;
         }
         // else if (interaction.isSelectMenu() || interaction.isButton()) {
@@ -28,13 +29,14 @@ module.exports = {
 
         try {
             await command.execute(interaction);
-        }
-        catch (error) {
+        } catch (error) {
             logger.error(error);
-            return interaction.editReply({
-                content: 'There was an error while executing this command!',
-                ephemeral: true,
-            }).catch(err => logger.error(err));
+            return interaction
+                .editReply({
+                    content: "There was an error while executing this command!",
+                    ephemeral: true,
+                })
+                .catch((err) => logger.error(err));
         }
     },
 };
