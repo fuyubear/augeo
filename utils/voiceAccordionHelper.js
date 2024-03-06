@@ -86,7 +86,7 @@ async function getNewAccordionExpandChName(accordionSettings) {
                 ) {
                     accordionSettings.cycleIdx = 0;
                 }
-                await saveSettings(accordionSettings);
+                await saveVoiceAccordionState(accordionSettings);
                 return expandChName;
             }
             skipCount--;
@@ -108,7 +108,7 @@ async function putBackAccordionExpandCh(
     for (const expandChName in accordionSettings.expand) {
         if (accordionSettings.expand[expandChName] === channelId) {
             accordionSettings.expand[expandChName] = 0;
-            await saveSettings(accordionSettings);
+            await saveVoiceAccordionState(accordionSettings);
             logInfo(
                 logger,
                 instanceLogPrefix,

@@ -11,6 +11,8 @@ const {
     getGuildLock,
     releaseGuildLock,
     getInstanceLogPrefix,
+    logError,
+    logInfo,
 } = require("../utils/voiceAccordionHelper");
 
 const { parentLogger } = require("../logger");

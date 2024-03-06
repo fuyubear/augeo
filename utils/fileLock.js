@@ -1,4 +1,5 @@
 const { existsSync, appendFile } = require("fs");
+const { unlink } = require("fs").promises;
 
 async function getLock(lockFileName, instanceLogPrefix, logger, timeout = 300) {
     let acquiredLock = false;
