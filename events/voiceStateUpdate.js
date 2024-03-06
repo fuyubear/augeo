@@ -178,8 +178,8 @@ module.exports = {
 
                 if (!newVoiceChannelName) {
                     await logError(
-                        oldState.guild,
                         logger,
+                        acquiredLock,
                         "Could not obtain a new name for a newly created voice channel."
                     );
                     await releaseGuildLock(
@@ -208,8 +208,8 @@ module.exports = {
 
                 accordionSettings.expand[newVoiceChannelName] = newChannel.id;
                 await logInfo(
-                    oldState.guild,
                     logger,
+                    acquiredLock,
                     "Created voice channel " + newVoiceChannelName
                 );
                 await saveVoiceAccordionStateByGuild(
