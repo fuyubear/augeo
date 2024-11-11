@@ -25,15 +25,16 @@ const client = new Client({
 });
 module.exports.client = client;
 
-// ORM + logger
-const Keyv = require("keyv");
+// inititate ORM and its logger
+const { Keyv } = require("keyv");
 const dbKeyvLogger = parentLogger.child({ module: "keyv" });
 let keyv;
-// TODO: add support for more storage backends supported by keyv
 if (redisEnabled) {
-    keyv = new Keyv(`redis://${redisUser}:${redisPass}@${redisConnection}`);
+    const { KeyvRedis } = require('@keyv/redis');
+    keyv = new Keyv({ store: new KeyvRedis({ uri: `redis://${redisUser}:${redisPass}@${redisConnection}` }) });
 } else {
-    keyv = new Keyv("sqlite://db.sqlite");
+    const { KeyvSqlite } = require('@keyv/sqlite');
+    keyv = new Keyv({ store: new KeyvSqlite({ uri: "sqlite://db.sqlite" }) });
 }
 keyv.on("error", (err) => dbKeyvLogger.error("Keyv connection error:", err));
 module.exports.keyv = keyv;
